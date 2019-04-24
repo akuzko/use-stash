@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "start": "webpack-dev-server --mode development",
+    "test": "mocha --require @babel/register --require @babel/polyfill --require ./test/setup.js --recursive",
+    "test:watch": "npm run test -- --watch",
     "transpile": "babel src -d dist --copy-files",
     "prepublishOnly": "npm run transpile"
   },
@@ -39,6 +41,7 @@
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.12.1",
     "html-webpack-plugin": "^3.2.0",
+    "jsdom": "^15.0.0",
     "mocha": "^6.1.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
