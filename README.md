@@ -14,7 +14,7 @@ npm install --save use-stash
 
 ## Usage
 
-### 1. Define Actions
+### 1. Define Namespace(s)
 
 Both application data and actions to manipulate it are organized in namespaces.
 Each namespace is defined/initialized via `defStash` function:
