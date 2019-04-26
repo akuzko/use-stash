@@ -111,6 +111,19 @@ function ItemStatus({index}) {
 This component will be re-rendered only if status of item at `index` position of
 `todos.list.items` array changes.
 
+### Mapping Data on Access
+
+It is possible to pre-process data when accessing it by passing mapper function to
+`useData` hook. For example:
+
+```js
+function ItemStatus({index}) {
+  const status = useData(`todos.list.items.${index}.status`, s => s.toUpperCase());
+
+  return <div>{ status }</div>;
+}
+```
+
 ### Hints and Tricks
 
 #### Use `update-js` and `update-js/fp` packages

@@ -69,10 +69,11 @@ export function defineActions(ns, initial, setup) {
   setup(action.bind(null, ns), reduce.bind(null, ns));
 }
 
-export function useData(path) {
-  const [nsData, setNsData] = useState(get(data, path));
+export function useData(path, getter) {
+  const item = get(data, path);
+  const [nsData, setNsData] = useState(getter ? getter(item) : item);
 
-  useEffect(() => subscribe(path, dt => setNsData(dt)), []);
+  useEffect(() => subscribe(path, dt => setNsData(getter ? getter(dt) : dt)), []);
 
   return nsData;
 }

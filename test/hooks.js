@@ -29,6 +29,23 @@ describe("useData, useAction", () => {
     });
   });
 
+  describe("using mapper function to preprocess stashed data", () => {
+    function List() {
+      const items = useData("items", items => items.map(i => i.name.toUpperCase()));
+      const {getItems} = useActions("items");
+
+      useEffect(getItems, []);
+
+      return <div>{ items[0] }</div>;
+    }
+
+    it("uses mapper function", () => {
+      const wrapper = mount(<List />);
+
+      expect(wrapper.find("div").text()).to.equal("FOO");
+    });
+  });
+
   describe("using actions to mutate data", () => {
     function List() {
       const items = useData("items");
