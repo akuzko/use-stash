@@ -92,6 +92,25 @@ function TodoItem({id}) {
 }
 ```
 
+### Granular Data Access
+
+Usually it may be much more efficient to use only small piece of data stored
+in namespace. This way your component will be re-rendered only if that small piece
+gets changed. To do so, you simply have to pass full path to the object you
+are interested in to `useData` hook call. All path segments should be separated
+by `"."`. For example:
+
+```js
+function ItemStatus({index}) {
+  const status = useData(`todos.list.items.${index}.status`);
+
+  return <div>{ status.toUpperCase() }</div>;
+}
+```
+
+This component will be re-rendered only if status of item at `index` position of
+`todos.list.items` array changes.
+
 ### Hints and Tricks
 
 #### Use `update-js` and `update-js/fp` packages

@@ -9,23 +9,57 @@ function action(ns, name, fn) {
 }
 
 function reduce(ns, fn) {
-  data[ns] = fn(data[ns]);
-
-  notifyListeners(ns);
+  withNotification(ns, () => {
+    data[ns] = fn(data[ns]);
+  });
 }
 
-function subscribe(ns, handler) {
-  listeners[ns].push(handler);
+function get(obj, path) {
+  path = path.split(".");
+  let current = obj;
+  for (let i = 0; i < path.length; i++) {
+    if (current) {
+      current = current[path[i]];
+    } else {
+      return current;
+    }
+  }
+  return current;
+}
+
+function subscribe(path, handler) {
+  if (!(path in listeners)) {
+    listeners[path] = [];
+  }
+  listeners[path].push(handler);
 
   return function() {
-    const index = listeners[ns].indexOf(handler);
+    const index = listeners[path].indexOf(handler);
 
-    listeners[ns].splice(index, 1);
+    listeners[path].splice(index, 1);
   };
 }
 
-function notifyListeners(ns) {
-  listeners[ns].forEach(fn => fn(data[ns]));
+function withNotification(ns, cb) {
+  const old = {};
+  const paths = [];
+
+  for (const path in listeners) {
+    if (path.startsWith(ns)) {
+      paths.push(path);
+      old[path] = get(data, path);
+    }
+  }
+
+  cb();
+
+  paths.forEach((path) => {
+    const value = get(data, path);
+
+    if (old[path] !== value) {
+      listeners[path].forEach(fn => fn(value));
+    }
+  });
 }
 
 export function defineActions(ns, initial, setup) {
@@ -35,10 +69,10 @@ export function defineActions(ns, initial, setup) {
   setup(action.bind(null, ns), reduce.bind(null, ns));
 }
 
-export function useData(ns) {
-  const [nsData, setNsData] = useState(data[ns]);
+export function useData(path) {
+  const [nsData, setNsData] = useState(get(data, path));
 
-  useEffect(() => subscribe(ns, dt => setNsData(dt)), []);
+  useEffect(() => subscribe(path, dt => setNsData(dt)), []);
 
   return nsData;
 }
