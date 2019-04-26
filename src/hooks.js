@@ -62,7 +62,7 @@ function withNotification(ns, cb) {
   });
 }
 
-export function defineActions(ns, initial, setup) {
+export function defStash(ns, initial, setup) {
   data[ns] = initial;
   actions[ns] = {};
   listeners[ns] = [];
@@ -82,6 +82,6 @@ export function useActions(ns) {
   return actions[ns];
 }
 
-export function useDataActions(ns) {
+export function useStash(ns) {
   return [useData(ns), useActions(ns)];
 }

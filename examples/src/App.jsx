@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { defineActions, useData, useActions } from "../../src";
+import { defStash, useData, useActions } from "../../src";
 
 const initialState = {
   list: [],
@@ -26,7 +26,7 @@ function getTodoDetails(i) {
   return todos[i];
 }
 
-defineActions("todos", initialState, (action, reduce) => {
+defStash("todos", initialState, (action, reduce) => {
   action("getTodos", (data) => {
     reduce(data => ({...data, list: getTodos()}));
   });
@@ -39,7 +39,8 @@ defineActions("todos", initialState, (action, reduce) => {
     reduce((data) => {
       const list = [...data.list];
 
-      return {...data, list: list.splice(i, 1)};
+      list.splice(i, 1);
+      return {...data, list};
     });
   });
 });

@@ -1,5 +1,5 @@
 {
-  "name": "ok-react-data-actions",
+  "name": "use-stash",
   "version": "1.0.0",
   "description": "React hooks for app-wide data access and manipulation",
   "main": "dist/index.js",
@@ -21,7 +21,7 @@
     "action"
   ],
   "author": "Artem Kuzko <a.kuzko@gmail.com> (https://github.com/akuzko)",
-  "homepage": "https://github.com/akuzko/ok-react-data-actions",
+  "homepage": "https://github.com/akuzko/use-stash",
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.8.6",

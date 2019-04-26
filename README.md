@@ -1,5 +1,5 @@
-React Data & Actions
-====================
+React Stash Hooks
+=================
 
 React hooks for app-wide data access and manipulation via actions. Minimalistic
 and easy-to-use solution inspired by [`redux`](https://redux.js.org/) project family.
@@ -7,7 +7,7 @@ and easy-to-use solution inspired by [`redux`](https://redux.js.org/) project fa
 ## Installation
 
 ```
-npm install --save ok-react-data-actions
+npm install --save use-stash
 ```
 
 ## Usage
@@ -15,17 +15,17 @@ npm install --save ok-react-data-actions
 ### 1. Define Actions
 
 Both application data and actions to manipulate it are organized in namespaces.
-Each namespace is defined/initialized via `defineActions` function:
+Each namespace is defined/initialized via `defStash` function:
 
 ```js
-import { defineActions } from "ok-react-data-actions";
+import { defStash } from "use-stash";
 
 const initialData = {
   items: [],
   details: {}
 };
 
-defineActions("todos", initialData, (action, reduce) => {
+defStash("todos", initialData, (action, reduce) => {
   action("getTodos", () => {
     fetch("/api/todos")
       .then(response => response.json())
@@ -40,32 +40,36 @@ defineActions("todos", initialData, (action, reduce) => {
 });
 ```
 
-### 2. Import Namespace Definitions
+### 2. Import Stash Namespace Definitions
 
 Don't forget to import all definitions on app initialization somewhere in your
 entry. Like so:
 
 ```js
-import "actions/todos";
-import "actions/projects";
+import "stash/todos";
+import "stash/projects";
 // ...
 ```
 
 ### 3. Use Data and Actions
 
-`ok-react-data-actions` provides following hooks for you to use:
-- `useData(namespace)` - returns a data object of specified `namespace`. Whenever
-  this object gets updated, your component will be updated as well.
+`use-stash` provides following hooks for you to use:
+- `useData(path, mapper)` - returns a data object of specified by `path`. The
+  simplest value of `path` is namespace name itself. But it can also represent
+  deeply nested value (see **Granular Data Access** section bellow).
+  Whenever this object gets updated, your component will be updated as well.
+  If `mapper` function is passed, it will be used to preprocess stashed value
+  before passing it to your component (see **Mapping Data on Access** section bellow).
 - `useActions(namespace)` - returns object with all actions defined for specified
-  `namespace`. This actions can (and should) be used for all data manipulations
-- `useDataActions(namespace)` - returns two-object array of namespace data and
+  `namespace`. This actions can (and should) be used for all data manipulations.
+- `useStash(namespace)` - returns two-object array of namespace data and
   actions.
 
 For example:
 
 ```js
 import { useEffect } from "react";
-import { useData, useActions, useDataActions } from "ok-react-data-actions";
+import { useData, useActions, useStash } from "use-stash";
 
 function TodosList() {
   const {items} = useData("todos");
@@ -79,8 +83,8 @@ function TodosList() {
 }
 
 function TodoItem({id}) {
-  // `useDataActions` can be used to return both data and actions in single call;
-  const [{details}, {getTodo}] = useDataActions("todos");
+  // `useStash` can be used to return both data and actions in single call;
+  const [{details}, {getTodo}] = useStash("todos");
 
   useEffect(() => {
     getTodo(id);
@@ -113,8 +117,8 @@ This component will be re-rendered only if status of item at `index` position of
 
 ### Mapping Data on Access
 
-It is possible to pre-process data when accessing it by passing mapper function to
-`useData` hook. For example:
+It is possible to pre-process stashed data when accessing it by passing mapper
+function to `useData` hook. For example:
 
 ```js
 function ItemStatus({index}) {
@@ -156,7 +160,7 @@ the list.
 With `update-js` it can look like this:
 
 ```js
-import { defineActions } from "ok-react-data-actions";
+import { defineActions } from "use-stash";
 import update from "update-js";
 
 defineAction("todos", initialData, (action, reduce) => {
@@ -182,7 +186,7 @@ defineAction("todos", initialData, (action, reduce) => {
 Or the same example with `update-js/fp` package looks even shorter:
 
 ```js
-import { defineActions } from "ok-react-data-actions";
+import { defineActions } from "use-stash";
 import update from "update-js/fp";
 
 defineAction("todos", initialData, (action, reduce) => {

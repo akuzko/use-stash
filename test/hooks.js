@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { expect } from "chai";
 import { shallow, mount } from "enzyme";
 
-import { useData, useActions, useDataActions, defineActions } from "../src";
+import { useData, useActions, useStash, defStash } from "../src";
 
-defineActions("items", [], (action, reduce) => {
+defStash("items", [], (action, reduce) => {
   action("getItems", () => {
     reduce(() => [{name: "Foo"}]);
   });
@@ -75,7 +75,7 @@ describe("useData, useAction", () => {
       details: {}
     };
 
-    defineActions("todos", initial, (action, reduce) => {
+    defStash("todos", initial, (action, reduce) => {
       action("getTodos", () => {
         reduce((data) => {
           return {...data, list: {items: [{id: 1, done: false}, {id: 2, done: false}]}};
@@ -197,9 +197,9 @@ describe("useData, useAction", () => {
   });
 });
 
-describe("useDataActions", () => {
+describe("useStash", () => {
   function List() {
-    const [items, {getItems}] = useDataActions("items");
+    const [items, {getItems}] = useStash("items");
 
     useEffect(getItems, []);
 
