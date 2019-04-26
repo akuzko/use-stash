@@ -2,7 +2,9 @@ React Stash Hooks
 =================
 
 React hooks for app-wide data access and manipulation via actions. Minimalistic
-and easy-to-use solution inspired by [`redux`](https://redux.js.org/) project family.
+and easy-to-use solution inspired by [`redux`](https://redux.js.org/) family of projects.
+
+[![build status](https://img.shields.io/travis/akuzko/use-stash/master.svg?style=flat-square)](https://travis-ci.org/akuzko/use-stash)
 
 ## Installation
 
