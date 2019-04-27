@@ -15,6 +15,8 @@ function reduce(ns, fn) {
 }
 
 function get(obj, path) {
+  if (!path) return obj;
+
   path = path.split(".");
   let current = obj;
   for (let i = 0; i < path.length; i++) {
@@ -66,7 +68,15 @@ export function defStash(ns, initial, setup) {
   data[ns] = initial;
   actions[ns] = {};
   listeners[ns] = [];
-  setup(action.bind(null, ns), reduce.bind(null, ns));
+
+  if (!setup) return;
+
+  const getNs = path => get(data[ns], path);
+  const reduceNs = reduce.bind(null, ns);
+  getNs.global = get.bind(null, data);
+  reduceNs.global = reduce;
+
+  setup(action.bind(null, ns), reduceNs, getNs);
 }
 
 export function useData(path, getter) {

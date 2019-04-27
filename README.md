@@ -130,7 +130,48 @@ function ItemStatus({index}) {
 }
 ```
 
-### Hints and Tricks
+### Accessing Data in Actions
+
+Setup function passed to `defStash` method actually accepts a third attribute -
+`get` function that can be used to access stashed data:
+
+```js
+defStash("todos", initialState, (action, reduce, get) => {
+  action("removeTodo", (i) => {
+    const id = get("list")[i].id;
+
+    reduce((data) => {
+      return {...data, list: data.list.filter(item => item.id !== id)};
+    });
+  });
+});
+```
+
+### Cross-namespace Interaction
+
+Both `get` and `reduce` functions can be used to access/reduce data of other
+namespaces via `global` function. For example:
+
+```js
+defStash("todos", initialState, (action, reduce, get) => {
+  action("removeTodo", (i) => {
+    const item = get("list")[i];
+
+    reduce((data) => {
+      const list = [...data.list];
+
+      list.splice(i, 1);
+      return {...data, list};
+    });
+
+    reduce.global("logs", (data) => {
+      return [...data, `${get.global("session.name")} removed entry "${item.title}"`];
+    });
+  });
+});
+```
+
+### Hints and Tips
 
 #### Use `update-js` and `update-js/fp` packages
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { defStash, useData, useActions } from "../../src";
+import { defStash, useData, useActions, useStash } from "../../src";
 
 const initialState = {
   list: [],
@@ -26,8 +26,8 @@ function getTodoDetails(i) {
   return todos[i];
 }
 
-defStash("todos", initialState, (action, reduce) => {
-  action("getTodos", (data) => {
+defStash("todos", initialState, (action, reduce, get) => {
+  action("getTodos", () => {
     reduce(data => ({...data, list: getTodos()}));
   });
 
@@ -36,39 +36,64 @@ defStash("todos", initialState, (action, reduce) => {
   });
 
   action("removeTodo", (i) => {
+    const item = get("list")[i];
+
     reduce((data) => {
       const list = [...data.list];
 
       list.splice(i, 1);
-      return {...data, list};
+      const nextState = {...data, list};
+
+      if (item.id === get("details.id")) {
+        nextState.details = {};
+      }
+
+      return nextState;
+    });
+
+    reduce.global("logs", (data) => {
+      return [...data, `${get.global("session.name")} removed entry "${item.title}"`];
     });
   });
 });
 
-export default function Form() {
+defStash("session", {}, (action, reduce) => {
+  action("getSession", () => {
+    reduce(() => ({name: "User"}));
+  });
+});
+
+defStash("logs", []);
+
+export default function App() {
   const {list, details} = useData("todos");
   const {getTodos, getTodo, removeTodo} = useActions("todos");
+  const [{name}, {getSession}] = useStash("session");
+  const entries = useData("logs");
 
-  useEffect(getTodos, []);
-
-  if (!list.length) {
-    return <div>No Todos</div>;
-  }
+  useEffect(() => {
+    getTodos();
+    getSession();
+  }, []);
 
   return (
     <>
-      <ul>
-        { list.map((item, i) => (
-            <li key={ i }>
-              <div>#{ item.id }: { item.title }</div>
-              <div>
-                <button onClick={ () => getTodo(i) }>Open Details</button>
-                <button onClick={ () => removeTodo(i) }>Remove</button>
-              </div>
-            </li>
-          ))
-        }
-      </ul>
+      <div>Hello, { name }!</div>
+      { list.length > 0
+        ? <ul>
+            { list.map((item, i) => (
+                <li key={ i }>
+                  <div>#{ item.id }: { item.title }</div>
+                  <div>
+                    <button onClick={ () => getTodo(i) }>Open Details</button>
+                    <button onClick={ () => removeTodo(i) }>Remove</button>
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+        : <div>No Todos</div>
+      }
       { details.id &&
         <div>
           <div>Todo Details:</div>
@@ -78,6 +103,12 @@ export default function Form() {
           <div>Status: { details.status }</div>
         </div>
       }
+      <div>
+        { entries.map((e, i) => (
+            <div key={ i }>{ e }</div>
+          ))
+        }
+      </div>
     </>
   );
 }

@@ -4,11 +4,29 @@ import { shallow, mount } from "enzyme";
 
 import { useData, useActions, useStash, defStash } from "../src";
 
-defStash("items", [], (action, reduce) => {
+defStash("items", [], (action, reduce, get) => {
   action("getItems", () => {
     reduce(() => [{name: "Foo"}]);
   });
+
+  action("dropItems", () => {
+    reduce(() => []);
+  });
+
+  action("addItem", () => {
+    const length = get().length;
+    const username = get.global("session.name");
+    const itemname = `Item ${length + 1}`;
+
+    reduce(data => [...data, {name: itemname}]);
+
+    reduce.global("logs", data => [...data, `${username} added item ${itemname}`]);
+  });
 });
+
+defStash("session", {name: "User"});
+
+defStash("logs", []);
 
 function Item({name}) {
   return <div>{ name }</div>;
@@ -64,6 +82,35 @@ describe("useData, useAction", () => {
       const wrapper = mount(<List />);
 
       expect(wrapper.find(Item)).to.have.lengthOf(1);
+    });
+  });
+
+  describe("getter and cross-namespace interaction", () => {
+    function Page() {
+      const {addItem, dropItems} = useActions("items");
+      const logs = useData("logs");
+
+      useEffect(dropItems, []);
+
+      return (
+        <>
+          <button className="addItemBtn" onClick={ addItem }>Add Item</button>
+
+          <ul>
+            { logs.map((entry, i) => (
+                <li key={ i } className="logEntry">{ entry }</li>
+              ))
+            }
+          </ul>
+        </>
+      )
+    }
+
+    it ("allows to access data of namespace and cross-namespace getter and reducer", () => {
+      const wrapper = mount(<Page />);
+
+      wrapper.find(".addItemBtn").simulate("click");
+      expect(wrapper.find(".logEntry").text()).to.eq("User added item Item 1");
     });
   });
 
@@ -210,7 +257,7 @@ describe("useStash", () => {
     );
   }
 
-  it("provdes both data and actions objects", () => {
+  it("provides both data and actions objects", () => {
     const wrapper = mount(<List />);
 
     expect(wrapper.find(Item)).to.have.lengthOf(1);
