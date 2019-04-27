@@ -120,7 +120,7 @@ This component will be re-rendered only if status of item at `index` position of
 
 ### Mapping Data on Access
 
-It is possible to pre-process stashed data when accessing it by passing mapper
+It is possible to preprocess stashed data when accessing it by passing mapper
 function to `useData` hook. For example:
 
 ```js

@@ -7,6 +7,7 @@ export default class Stash {
 
     this.init = this.init.bind(this);
     this.defAction = this.defAction.bind(this);
+    this.callAction = this.callAction.bind(this);
     this.get = this.get.bind(this);
     this.get.global = function(path) {
       return get(data, path);

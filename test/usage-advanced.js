@@ -9,18 +9,24 @@ describe("advanced usage", () => {
     defStash("items", (stash) => {
       stash.reset();
 
-      const { init, defAction, get, reduce, ns } = stash;
+      const { init, defAction, callAction, get, reduce, ns } = stash;
 
-      init([]);
+      init({list: [], changed: false});
 
       defAction("addItem", () => {
-        const length = get("length");
+        const length = get("list.length");
         const username = ns("session").get("name");
         const itemname = `Item ${length + 1}`;
 
-        reduce(data => [...data, {name: itemname}]);
+        reduce(data => ({...data, list: [...data.list, {name: itemname}]}));
+
+        callAction("change");
 
         ns("logs").callAction("addEntry", `${username} added item ${itemname}`);
+      });
+
+      defAction("change", () => {
+        reduce(data => ({...data, changed: true}));
       });
     });
 
