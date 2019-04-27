@@ -27,14 +27,14 @@ const initialData = {
   details: {}
 };
 
-defStash("todos", initialData, (action, reduce) => {
-  action("getTodos", () => {
+defStash("todos", initialData, (defAction, reduce) => {
+  defAction("getTodos", () => {
     fetch("/api/todos")
       .then(response => response.json())
       .then(items => reduce(data => ({...data, items})));
   });
 
-  action("getTodo", (id) => {
+  defAction("getTodo", (id) => {
     fetch(`/api/todos/${id}`)
       .then(response => response.json())
       .then(details => reduce(data => ({...data, details})));
@@ -136,8 +136,8 @@ Setup function passed to `defStash` method actually accepts a third attribute -
 `get` function that can be used to access stashed data:
 
 ```js
-defStash("todos", initialState, (action, reduce, get) => {
-  action("removeTodo", (i) => {
+defStash("todos", initialState, (defAction, reduce, get) => {
+  defAction("removeTodo", (i) => {
     const id = get("list")[i].id;
 
     reduce((data) => {
@@ -153,8 +153,8 @@ Both `get` and `reduce` functions can be used to access/reduce data of other
 namespaces via `global` function. For example:
 
 ```js
-defStash("todos", initialState, (action, reduce, get) => {
-  action("removeTodo", (i) => {
+defStash("todos", initialState, (defAction, reduce, get) => {
+  defAction("removeTodo", (i) => {
     const item = get("list")[i];
 
     reduce((data) => {
@@ -165,13 +165,73 @@ defStash("todos", initialState, (action, reduce, get) => {
     });
 
     reduce.global("logs", (data) => {
-      return [...data, `${get.global("session.name")} removed entry "${item.title}"`];
+      return [...data, `${get.global("session.name")} removed item "${item.title}"`];
     });
   });
 });
 ```
 
+### Advanced Usage
+
+In case if usage described above is not enough, you may have full access to `Stash`
+instance and it's functionality. This can be used, for instance, to call actions
+of other namespaces from within action you're defining. To work directly with
+`stash` instance, pass a single function that accepts it to a `defStash` function
+call. For example:
+
+```js
+defStash("todos", (stash) => {
+  stash.init(initialState);
+
+  stash.defAction("removeTodo", (i) => {
+    const item = stash.get("list")[i];
+    const username = stash.ns("session").get("name");
+
+    stash.reduce((data) => {
+      const list = [...data.list];
+
+      list.splice(i, 1);
+      return {...data, list};
+    });
+
+    stash.ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`)
+  });
+});
+```
+
+Two important things to note here:
+- Don't forget to call `init` function to set initial state for namespace being
+  defined.
+- `ns` function can be used to access `Stash` instance of other namespace.
+
 ### Hints and Tips
+
+#### Destructure Stash instance with Advanced Usage
+
+Core `Stash` instance methods are bound to instance itself, i.e. it is safe to
+assign them to callable variables, preserving context:
+
+```js
+defStash("todos", (stash) => {
+  const {init, defAction, reduce, get, ns} = stash;
+
+  init(initialState);
+
+  defAction("removeTodo", (i) => {
+    const item = get("list")[i];
+    const username = ns("session").get("name");
+
+    reduce((data) => {
+      const list = [...data.list];
+
+      list.splice(i, 1);
+      return {...data, list};
+    });
+
+    ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`)
+  });
+});
+```
 
 #### Use `update-js` and `update-js/fp` packages
 
@@ -206,8 +266,8 @@ With `update-js` it can look like this:
 import { defineActions } from "use-stash";
 import update from "update-js";
 
-defineAction("todos", initialData, (action, reduce) => {
-  action("getTodos", () => {
+defineAction("todos", initialData, (defAction, reduce) => {
+  defAction("getTodos", () => {
     reduce(data => update(data, "list.loading", true));
 
     fetch("/api/todos")
@@ -220,7 +280,7 @@ defineAction("todos", initialData, (action, reduce) => {
       });
   });
 
-  action("toggleChecked", (id) => {
+  defAction("toggleChecked", (id) => {
     reduce(data => update.with(data, `list.items.{id:${id}}.checked`, checked => !checked));
   })
 });
@@ -232,8 +292,8 @@ Or the same example with `update-js/fp` package looks even shorter:
 import { defineActions } from "use-stash";
 import update from "update-js/fp";
 
-defineAction("todos", initialData, (action, reduce) => {
-  action("getTodos", () => {
+defineAction("todos", initialData, (defAction, reduce) => {
+  defAction("getTodos", () => {
     reduce(update("list.loading", true));
 
     fetch("/api/todos")
@@ -246,7 +306,7 @@ defineAction("todos", initialData, (action, reduce) => {
       });
   });
 
-  action("toggleChecked", (id) => {
+  defAction("toggleChecked", (id) => {
     reduce(update.with(`list.items.{id:${id}}.checked`, checked => !checked));
   })
 });

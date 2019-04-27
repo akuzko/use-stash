@@ -1,82 +1,22 @@
 import { useState, useEffect } from "react";
-
-const data = {};
-const actions = {};
-const listeners = {};
-
-function action(ns, name, fn) {
-  actions[ns][name] = fn;
-}
-
-function reduce(ns, fn) {
-  withNotification(ns, () => {
-    data[ns] = fn(data[ns]);
-  });
-}
-
-function get(obj, path) {
-  if (!path) return obj;
-
-  path = path.split(".");
-  let current = obj;
-  for (let i = 0; i < path.length; i++) {
-    if (current) {
-      current = current[path[i]];
-    } else {
-      return current;
-    }
-  }
-  return current;
-}
-
-function subscribe(path, handler) {
-  if (!(path in listeners)) {
-    listeners[path] = [];
-  }
-  listeners[path].push(handler);
-
-  return function() {
-    const index = listeners[path].indexOf(handler);
-
-    listeners[path].splice(index, 1);
-  };
-}
-
-function withNotification(ns, cb) {
-  const old = {};
-  const paths = [];
-
-  for (const path in listeners) {
-    if (path.startsWith(ns)) {
-      paths.push(path);
-      old[path] = get(data, path);
-    }
-  }
-
-  cb();
-
-  paths.forEach((path) => {
-    const value = get(data, path);
-
-    if (old[path] !== value) {
-      listeners[path].forEach(fn => fn(value));
-    }
-  });
-}
+import { data, actions, subscribe } from "./storage";
+import { get } from "./utils";
+import Stash from "./Stash";
 
 export function defStash(ns, initial, setup) {
-  data[ns] = initial;
-  actions[ns] = {};
-  listeners[ns] = [];
+  const stash = new Stash(ns);
 
-  if (!setup) return;
+  stash.reset();
 
-  const getNs = path => get(data[ns], path);
-  const reduceNs = reduce.bind(null, ns);
-  getNs.global = get.bind(null, data);
-  reduceNs.global = reduce;
+  if (typeof initial === "function" && setup === undefined) {
+    return initial(stash);
+  }
 
-  setup(action.bind(null, ns), reduceNs, getNs);
+  stash.init(initial);
+
+  if (setup) {
+    setup(stash.defAction, stash.reduce, stash.get);
+  }
 }
 
 export function useData(path, getter) {
