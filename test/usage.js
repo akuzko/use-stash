@@ -109,7 +109,7 @@ describe("usage", () => {
         );
       }
 
-      it ("allows to access data of namespace and cross-namespace getter and reducer", () => {
+      it("allows to access data of namespace and cross-namespace getter and reducer", () => {
         const wrapper = mount(<Page />);
 
         wrapper.find(".addItemBtn").simulate("click");

@@ -5,6 +5,7 @@ React hooks for app-wide data access and manipulation via actions. Minimalistic
 and easy-to-use solution inspired by [`redux`](https://redux.js.org/) family of projects.
 
 [![build status](https://img.shields.io/travis/akuzko/use-stash/master.svg?style=flat-square)](https://travis-ci.org/akuzko/use-stash)
+[![npm version](https://img.shields.io/npm/v/use-stash.svg?style=flat-square)](https://www.npmjs.com/package/use-stash)
 
 ## Installation
 
@@ -194,7 +195,7 @@ defStash("todos", (stash) => {
       return {...data, list};
     });
 
-    stash.ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`)
+    stash.ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`);
   });
 });
 ```
@@ -228,7 +229,7 @@ defStash("todos", (stash) => {
       return {...data, list};
     });
 
-    ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`)
+    ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`);
   });
 });
 ```

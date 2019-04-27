@@ -57,7 +57,7 @@ describe("advanced usage", () => {
     );
   }
 
-  it ("allows use Stash instance for namespace definitions", () => {
+  it("allows use Stash instance for namespace definitions", () => {
     const wrapper = mount(<Page />);
 
     wrapper.find(".addItemBtn").simulate("click");
