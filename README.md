@@ -264,10 +264,10 @@ the list.
 With `update-js` it can look like this:
 
 ```js
-import { defineActions } from "use-stash";
+import { defStash } from "use-stash";
 import update from "update-js";
 
-defineAction("todos", initialData, (defAction, reduce) => {
+defStash("todos", initialData, (defAction, reduce) => {
   defAction("getTodos", () => {
     reduce(data => update(data, "list.loading", true));
 
@@ -290,10 +290,10 @@ defineAction("todos", initialData, (defAction, reduce) => {
 Or the same example with `update-js/fp` package looks even shorter:
 
 ```js
-import { defineActions } from "use-stash";
+import { defStash } from "use-stash";
 import update from "update-js/fp";
 
-defineAction("todos", initialData, (defAction, reduce) => {
+defStash("todos", initialData, (defAction, reduce) => {
   defAction("getTodos", () => {
     reduce(update("list.loading", true));
 
