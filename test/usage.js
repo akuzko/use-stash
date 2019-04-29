@@ -5,30 +5,39 @@ import { shallow, mount } from "enzyme";
 import { useData, useActions, useStash, defStash } from "../src";
 
 describe("usage", () => {
-  before(() => {
-    defStash("items", [], (action, reduce, get) => {
-      action("getItems", () => {
+  beforeEach(() => {
+    defStash("items", [], ({defAction, reduce, get, ns}) => {
+      defAction("getItems", () => {
         reduce(() => [{name: "Foo"}]);
       });
 
-      action("dropItems", () => {
+      defAction("dropItems", () => {
         reduce(() => []);
       });
 
-      action("addItem", () => {
-        const length = get().length;
-        const username = get.global("session.name");
+      defAction("addItem", (reduceLogs) => {
+        const length = get("length");
+        const username = ns("session").get("name");
         const itemname = `Item ${length + 1}`;
+        const logEntry = `${username} added item ${itemname}`;
 
         reduce(data => [...data, {name: itemname}]);
 
-        reduce.global("logs", data => [...data, `${username} added item ${itemname}`]);
+        if (reduceLogs) {
+          ns("logs").reduce(data => [...data, logEntry]);
+        } else {
+          ns("logs").callAction("addEntry", logEntry);
+        }
       });
     });
 
     defStash("session", {name: "User"});
 
-    defStash("logs", []);
+    defStash("logs", [], ({defAction, reduce}) => {
+      defAction("addEntry", (entry) => {
+        reduce(data => [...data, entry]);
+      });
+    });
   });
 
   function Item({name}) {
@@ -88,7 +97,7 @@ describe("usage", () => {
       });
     });
 
-    describe("getter and cross-namespace interaction", () => {
+    describe("cross-namespace interaction", () => {
       function Page() {
         const {addItem, dropItems} = useActions("items");
         const logs = useData("logs");
@@ -97,7 +106,8 @@ describe("usage", () => {
 
         return (
           <>
-            <button className="addItemBtn" onClick={ addItem }>Add Item</button>
+            <button className="addItemBtn" onClick={ () => addItem() }>Add Item</button>
+            <button className="addItemWithLogReduceBtn" onClick={ () => addItem(true) }>Add Item</button>
 
             <ul>
               { logs.map((entry, i) => (
@@ -109,11 +119,18 @@ describe("usage", () => {
         );
       }
 
-      it("allows to access data of namespace and cross-namespace getter and reducer", () => {
+      it("allows allows to use methods of other namespace Stash instance", () => {
         const wrapper = mount(<Page />);
 
         wrapper.find(".addItemBtn").simulate("click");
         expect(wrapper.find(".logEntry").text()).to.eq("User added item Item 1");
+      });
+
+      it("allows to call actions of other namespace Stash instance", () => {
+        const wrapper = mount(<Page />);
+
+        wrapper.find(".addItemWithLogReduceBtn").simulate("click");
+        expect(wrapper.find(".logEntry").last().text()).to.eq("User added item Item 1");
       });
     });
 
@@ -125,20 +142,20 @@ describe("usage", () => {
         details: {}
       };
 
-      defStash("todos", initial, (action, reduce) => {
-        action("getTodos", () => {
+      defStash("todos", initial, ({defAction, reduce}) => {
+        defAction("getTodos", () => {
           reduce((data) => {
             return {...data, list: {items: [{id: 1, done: false}, {id: 2, done: false}]}};
           });
         });
 
-        action("completeTodo", (id) => {
+        defAction("completeTodo", (id) => {
           reduce((data) => {
             return {...data, list: {items: data.list.items.map(i => i.id === id ? {...i, done: true} : i)}};
           });
         });
 
-        action("getTodo", (id) => {
+        defAction("getTodo", (id) => {
           reduce((data) => {
             return {...data, details: {id, description: `Todo ${id}`}};
           });

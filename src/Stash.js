@@ -9,15 +9,7 @@ export default class Stash {
     this.defAction = this.defAction.bind(this);
     this.callAction = this.callAction.bind(this);
     this.get = this.get.bind(this);
-    this.get.global = function(path) {
-      return get(data, path);
-    }
     this.reduce = this.reduce.bind(this);
-    this.reduce.global = function(ns, fn) {
-      withNotification(ns, () => {
-        data[ns] = fn(data[ns]);
-      });
-    }
   }
 
   ns(ns) {

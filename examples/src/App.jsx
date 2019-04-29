@@ -1,30 +1,76 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useData, useActions, useStash } from "../../src";
 
-import "./stash-advanced";
+import "./stash";
 
 export default function App() {
-  const {list, details} = useData("todos");
-  const {getTodos, getTodo, removeTodo} = useActions("todos");
-  const [{name}, {getSession}] = useStash("session");
-  const entries = useData("logs");
+  const {name} = useData("session");
 
-  useEffect(() => {
-    getTodos();
-    getSession();
-  }, []);
+  if (!name) {
+    return <UserForm />;
+  }
 
   return (
     <>
       <div>Hello, { name }!</div>
+      <Todos />
+      <TodoDetails />
+      <Logs />
+    </>
+  );
+}
+
+function UserForm() {
+  const [name, setName] = useState("");
+  const changeName = (e) => {
+    setName(e.target.value);
+  };
+  const {setName: doSetName} = useActions("session");
+  const submit = () => {
+    if (!name) {
+      alert("Please enter your name");
+    } else {
+      doSetName(name);
+    }
+  };
+
+  return (
+    <>
+      <label>
+        Name
+        <input placeholder="Please enter your name" value={ name } onChange={ changeName } />
+      </label>
+      <button onClick={ submit }>Submit</button>
+    </>
+  );
+}
+
+function Todos() {
+  const list = useData("todos.list");
+  const {getTodos, getTodo, toggleTodo, removeTodo} = useActions("todos");
+
+  useEffect(() => {
+    getTodos();
+  }, []);
+
+  return (
+    <>
       { list.length > 0
         ? <ul>
             { list.map((item, i) => (
                 <li key={ i }>
                   <div>#{ item.id }: { item.title }</div>
                   <div>
-                    <button onClick={ () => getTodo(i) }>Open Details</button>
-                    <button onClick={ () => removeTodo(i) }>Remove</button>
+                    <label>
+                      Completed
+                      <input
+                        type="checkbox"
+                        checked={ item.completed ? true : false }
+                        onChange={ () => toggleTodo(item.id) }
+                      />
+                    </label>
+                    <button onClick={ () => getTodo(item.id) }>Open Details</button>
+                    <button onClick={ () => removeTodo(item.id) }>Remove</button>
                   </div>
                 </li>
               ))
@@ -32,21 +78,40 @@ export default function App() {
           </ul>
         : <div>No Todos</div>
       }
-      { details.id &&
-        <div>
-          <div>Todo Details:</div>
-          <div>ID: { details.id }</div>
-          <div>Title: { details.title }</div>
-          <div>Description: { details.description }</div>
-          <div>Status: { details.status }</div>
-        </div>
-      }
-      <div>
+    </>
+  );
+}
+
+function TodoDetails() {
+  const details = useData("todos.details");
+
+  if (!details.id) {
+    return null;
+  }
+
+  return (
+    <>
+      <div>Todo Details:</div>
+      <div>ID: { details.id }</div>
+      <div>Title: { details.title }</div>
+      <div>Description: { details.description }</div>
+      <div>Status: { details.completed ? "DONE" : "TODO" }</div>
+    </>
+  );
+}
+
+function Logs() {
+  const [entries, {clear}] = useStash("logs");
+
+  return (
+    <>
+      <ul>
         { entries.map((e, i) => (
-            <div key={ i }>{ e }</div>
+            <li key={ i }>{ e }</li>
           ))
         }
-      </div>
+      </ul>
+      <button onClick={ clear }>Clear Logs</button>
     </>
   );
 }

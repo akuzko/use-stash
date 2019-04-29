@@ -7,15 +7,10 @@ export function defStash(ns, initial, setup) {
   const stash = new Stash(ns);
 
   stash.reset();
-
-  if (typeof initial === "function" && setup === undefined) {
-    return initial(stash);
-  }
-
   stash.init(initial);
 
   if (setup) {
-    setup(stash.defAction, stash.reduce, stash.get);
+    setup(stash);
   }
 }
 

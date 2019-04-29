@@ -28,7 +28,7 @@ const initialData = {
   details: {}
 };
 
-defStash("todos", initialData, (defAction, reduce) => {
+defStash("todos", initialData, ({defAction, reduce}) => {
   defAction("getTodos", () => {
     fetch("/api/todos")
       .then(response => response.json())
@@ -57,11 +57,11 @@ import "stash/projects";
 ### 3. Use Data and Actions
 
 `use-stash` provides following hooks for you to use:
-- `useData(path, mapper)` - returns a data object of specified by `path`. The
+- `useData(path, mapperFn)` - returns a data object of specified by `path`. The
   simplest value of `path` is namespace name itself. But it can also represent
   deeply nested value (see **Granular Data Access** section bellow).
   Whenever this object gets updated, your component will be updated as well.
-  If `mapper` function is passed, it will be used to preprocess stashed value
+  If `mapperFn` function is passed, it will be used to preprocess stashed value
   before passing it to your component (see **Mapping Data on Access** section bellow).
 - `useActions(namespace)` - returns object with all actions defined for specified
   `namespace`. This actions can (and should) be used for all data manipulations.
@@ -133,11 +133,10 @@ function ItemStatus({index}) {
 
 ### Accessing Data in Actions
 
-Setup function passed to `defStash` method actually accepts a third attribute -
-`get` function that can be used to access stashed data:
+You can use `get` method of `Stash` instance to access data of corresponding namespace:
 
 ```js
-defStash("todos", initialState, (defAction, reduce, get) => {
+defStash("todos", initialState, ({defAction, reduce, get}) => {
   defAction("removeTodo", (i) => {
     const id = get("list")[i].id;
 
@@ -150,74 +149,12 @@ defStash("todos", initialState, (defAction, reduce, get) => {
 
 ### Cross-namespace Interaction
 
-Both `get` and `reduce` functions can be used to access/reduce data of other
-namespaces via `global` function. For example:
+You can use `ns` method to access `Stash` instance of another namespace. It can be
+used for fetching data from other namespaces, reducing it and even calling actions
+defined in other namespaces:
 
 ```js
-defStash("todos", initialState, (defAction, reduce, get) => {
-  defAction("removeTodo", (i) => {
-    const item = get("list")[i];
-
-    reduce((data) => {
-      const list = [...data.list];
-
-      list.splice(i, 1);
-      return {...data, list};
-    });
-
-    reduce.global("logs", (data) => {
-      return [...data, `${get.global("session.name")} removed item "${item.title}"`];
-    });
-  });
-});
-```
-
-### Advanced Usage
-
-In case if usage described above is not enough, you may have full access to `Stash`
-instance and it's functionality. This can be used, for instance, to call actions
-of other namespaces from within action you're defining. To work directly with
-`stash` instance, pass a single function that accepts it to a `defStash` function
-call. For example:
-
-```js
-defStash("todos", (stash) => {
-  stash.init(initialState);
-
-  stash.defAction("removeTodo", (i) => {
-    const item = stash.get("list")[i];
-    const username = stash.ns("session").get("name");
-
-    stash.reduce((data) => {
-      const list = [...data.list];
-
-      list.splice(i, 1);
-      return {...data, list};
-    });
-
-    stash.ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`);
-  });
-});
-```
-
-Two important things to note here:
-- Don't forget to call `init` function to set initial state for namespace being
-  defined.
-- `ns` function can be used to access `Stash` instance of other namespace.
-
-### Hints and Tips
-
-#### Destructure Stash instance with Advanced Usage
-
-Core `Stash` instance methods are bound to instance itself, i.e. it is safe to
-assign them to callable variables, preserving context:
-
-```js
-defStash("todos", (stash) => {
-  const {init, defAction, reduce, get, ns} = stash;
-
-  init(initialState);
-
+defStash("todos", initialState, ({defAction, reduce, get, ns}) => {
   defAction("removeTodo", (i) => {
     const item = get("list")[i];
     const username = ns("session").get("name");
@@ -229,10 +166,17 @@ defStash("todos", (stash) => {
       return {...data, list};
     });
 
+    ns("logs").reduce((data) => {
+      return [...data, `${username} removed item "${item.title}"`];
+    });
+    // if there is "addEntry" action defined in "logs" namespace, it can
+    // be called via
     ns("logs").callAction("addEntry", `${username} removed item "${item.title}"`);
   });
 });
 ```
+
+### Hints and Tips
 
 #### Use `update-js` and `update-js/fp` packages
 
@@ -267,7 +211,7 @@ With `update-js` it can look like this:
 import { defStash } from "use-stash";
 import update from "update-js";
 
-defStash("todos", initialData, (defAction, reduce) => {
+defStash("todos", initialData, ({defAction, reduce}) => {
   defAction("getTodos", () => {
     reduce(data => update(data, "list.loading", true));
 
@@ -283,7 +227,7 @@ defStash("todos", initialData, (defAction, reduce) => {
 
   defAction("toggleChecked", (id) => {
     reduce(data => update.with(data, `list.items.{id:${id}}.checked`, checked => !checked));
-  })
+  });
 });
 ```
 
@@ -293,7 +237,7 @@ Or the same example with `update-js/fp` package looks even shorter:
 import { defStash } from "use-stash";
 import update from "update-js/fp";
 
-defStash("todos", initialData, (defAction, reduce) => {
+defStash("todos", initialData, ({defAction, reduce}) => {
   defAction("getTodos", () => {
     reduce(update("list.loading", true));
 
@@ -309,7 +253,7 @@ defStash("todos", initialData, (defAction, reduce) => {
 
   defAction("toggleChecked", (id) => {
     reduce(update.with(`list.items.{id:${id}}.checked`, checked => !checked));
-  })
+  });
 });
 ```
 
