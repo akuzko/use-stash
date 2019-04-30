@@ -176,6 +176,58 @@ defStash("todos", initialState, ({defAction, reduce, get, ns}) => {
 });
 ```
 
+### HOCs for Class Components
+
+For hook-less class-based React components you can use HOC-based approach. For this,
+`use-stash` provides 3 helper functions, similar to hooks: `withData`, `withActions`
+and `withStash`. The latter mixes functionality of the former two.
+
+- `withData(dataMapping)` - allows to pass stash data to connected component's
+props. `dataMapping` is a plain object, whose keys are prop names and values are
+paths to data that component is interested in. For example:
+
+```js
+const HocPage = withData({
+  username: "session.name",
+  todos: "todos.list.items",
+  logEntries: "logs"
+})(Page);
+```
+
+In this example, underlying `Page` component will receive `username`, `todos`
+and `logEntries` props with values obtained from 3 different stash namespaces.
+
+- `withActions(actionsMapping)` - allows to pass stash actions to connected
+component's props. `actionsMapping` is a plain object, whose keys are prop names
+and values are strings that specify stash namespace and action name, separated
+by dot. For example:
+
+```js
+const HocLayout = withActions({
+  fetchSession: "session.getSession"
+})(Layout);
+```
+
+In this example, underlying `Layout` component will receive `fetchSession` prop,
+which is a function corresponding to `getSession` action of `session` namespace.
+
+- `withStash(dataMapping, actionsMapping)` - allows to pass both data and actions
+to connected component. A combination of `withData` and `withActions`. For example:
+
+```js
+const HocPage = withStash({
+  username: "session.name",
+  todos: "todos.list.items",
+  logEntries: "logs"
+}, {
+  getItems: "todos.getItems",
+  addItem: "todos.addItem"
+})(Page);
+```
+
+Keep in mind that under the hood HOC wrappers are functional hook-based components,
+i.e. you still need React 16.8+ to use HOC helpers.
+
 ### Hints and Tips
 
 #### Use `update-js` and `update-js/fp` packages
