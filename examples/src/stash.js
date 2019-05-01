@@ -7,7 +7,7 @@ const initialTodos = {
 };
 
 defStash("todos", initialTodos, (stash) => {
-  const {init, defAction, callAction, reduce, get, ns} = stash;
+  const {defAction, callAction, reduce, get, ns} = stash;
 
   defAction("getTodos", () => {
     return fetch("/todos")
@@ -60,13 +60,13 @@ defStash("todos", initialTodos, (stash) => {
   });
 });
 
-defStash("session", {}, ({init, defAction, reduce}) => {
+defStash("session", {}, ({defAction, reduce}) => {
   defAction("setName", (name) => {
     reduce(() => ({name}));
   });
 });
 
-defStash("logs", [], ({init, defAction, reduce}) => {
+defStash("logs", [], ({defAction, reduce}) => {
   defAction("addEntry", (entry) => {
     reduce(data => [...data, entry]);
   });

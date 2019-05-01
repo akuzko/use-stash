@@ -32,14 +32,16 @@ function mapActionsToProps(actionsMapping) {
 //   })(MyComponent);
 export function withData(dataMapping) {
   return function(Component) {
-    return function DataComponent(props) {
+    DataComponent.displayName = `Data(${Component.displayName})`;
+
+    function DataComponent(props) {
       const dataProps = mapDataToProps(dataMapping);
 
       return <Component { ...props } { ...dataProps } />;
     }
 
-    DataComponent.displayName = `Data(${Component.displayName})`;
-  }
+    return DataComponent;
+  };
 }
 
 // Example:
@@ -50,14 +52,16 @@ export function withData(dataMapping) {
 //   })(MyComponent);
 export function withActions(actionsMapping) {
   return function(Component) {
-    return function ActionsComponent(props) {
+    ActionsComponent.displayName = `Actions(${Component.displayName})`;
+
+    function ActionsComponent(props) {
       const actionProps = mapActionsToProps(actionsMapping);
 
       return <Component { ...props } { ...actionProps } />;
     }
 
-    ActionsComponent.displayName = `Actions(${Component.displayName})`;
-  }
+    return ActionsComponent;
+  };
 }
 
 // Example:
@@ -72,13 +76,15 @@ export function withActions(actionsMapping) {
 //   })(MyComponent);
 export function withStash(dataMapping, actionsMapping) {
   return function(Component) {
-    return function StashComponent(props) {
+    StashComponent.displayName = `Stash(${Component.displayName})`;
+
+    function StashComponent(props) {
       const dataProps = mapDataToProps(dataMapping);
       const actionProps = mapActionsToProps(actionsMapping);
 
       return <Component { ...props } { ...dataProps } { ...actionProps } />;
     }
 
-    StashComponent.displayName = `Stash(${Component.displayName})`;
-  }
+    return StashComponent;
+  };
 }

@@ -1,0 +1,33 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "env": {
+    "mocha": true
+  },
+  "plugins": [
+    "react"
+  ],
+  "globals": {
+    "global": "readonly",
+    "document": "readonly",
+    "Promise": "readonly"
+  },
+  "settings": {
+    "react": {
+      "createClass": "createReactClass",
+      "pragma": "React",
+      "version": "detect",
+      "flowVersion": "0.53"
+    },
+    "propWrapperFunctions": [
+      "forbidExtraProps",
+      {"property": "freeze", "object": "Object"},
+      {"property": "myFavoriteWrapper"}
+    ]
+  },
+  "rules": {
+    "quotes": ["warn", "double", {"avoidEscape": true}],
+    "react/jsx-curly-spacing": ["warn", "always"],
+    "react/prop-types": "off"
+  }
+}

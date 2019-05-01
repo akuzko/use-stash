@@ -57,7 +57,7 @@ import "stash/projects";
 ### 3. Use Data and Actions
 
 `use-stash` provides following hooks for you to use:
-- `useData(path, mapperFn)` - returns a data object of specified by `path`. The
+- `useData(path, mapperFn)` - returns a data object specified by `path`. The
   simplest value of `path` is namespace name itself. But it can also represent
   deeply nested value (see **Granular Data Access** section bellow).
   Whenever this object gets updated, your component will be updated as well.
@@ -138,7 +138,7 @@ You can use `get` method of `Stash` instance to access data of corresponding nam
 ```js
 defStash("todos", initialState, ({defAction, reduce, get}) => {
   defAction("removeTodo", (i) => {
-    const id = get("list")[i].id;
+    const id = get(`list.${i}.id`);
 
     reduce((data) => {
       return {...data, list: data.list.filter(item => item.id !== id)};
