@@ -1,18 +1,16 @@
-import { defStash } from "../../src";
-import { get as fetch, patch, destroy } from "./todos";
+import { defStash } from "../../../src";
+import { get as fetch, patch, destroy } from "../todos";
 
 const initialTodos = {
   list: [],
   details: {}
 };
 
-defStash("todos", initialTodos, (stash) => {
-  const {defAction, callAction, reduce, get, ns} = stash;
-
+defStash("todos", initialTodos, ({defAction, callAction, reduce, get, ns}) => {
   defAction("getTodos", () => {
     return fetch("/todos")
       .then((list) => {
-        reduce(data => ({...data, list}));
+        reduce("getTodosSuccess", data => ({...data, list}));
       });
   });
 
@@ -57,21 +55,5 @@ defStash("todos", initialTodos, (stash) => {
 
         ns("logs").callAction("addEntry", `${ns("session").get("name")} removed entry "${todo.title}"`);
       });
-  });
-});
-
-defStash("session", {}, ({defAction, reduce}) => {
-  defAction("setName", (name) => {
-    reduce(() => ({name}));
-  });
-});
-
-defStash("logs", [], ({defAction, reduce}) => {
-  defAction("addEntry", (entry) => {
-    reduce(data => [...data, entry]);
-  });
-
-  defAction("clear", () => {
-    reduce(() => []);
   });
 });

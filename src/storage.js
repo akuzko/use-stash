@@ -3,6 +3,7 @@ import { get } from "./utils";
 export const data = {};
 export const actions = {};
 export const listeners = {};
+export const mixins = {global: []};
 
 export function withNotification(ns, cb) {
   const old = {};

@@ -1,4 +1,4 @@
-import { data, actions, listeners, withNotification } from "./storage";
+import { data, actions, listeners, mixins, withNotification } from "./storage";
 import { get } from "./utils";
 
 export default class Stash {
@@ -10,6 +10,10 @@ export default class Stash {
     this.callAction = this.callAction.bind(this);
     this.get = this.get.bind(this);
     this.reduce = this.reduce.bind(this);
+    this.mixin = this.mixin.bind(this);
+    this.mixout = this.mixout.bind(this);
+
+    (ns in mixins ? mixins[ns] : mixins.global).forEach(([fn, args]) => this._applyMixin(fn, args));
   }
 
   ns(ns) {
@@ -19,6 +23,38 @@ export default class Stash {
   reset() {
     actions[this.namespace] = {};
     listeners[this.namespace] = [];
+    mixins[this.namespace] = [...mixins.global];
+  }
+
+  mixin(fn, ...args) {
+    const index = mixins[this.namespace].findIndex(([mixinFn]) => mixinFn === fn);
+
+    if (index > -1) {
+      mixins[this.namespace][index][1] = args;
+
+      return new Stash(this.namespace);
+    } else {
+      mixins[this.namespace].push([fn, args]);
+      this._applyMixin(fn, args);
+
+      return this;
+    }
+  }
+
+  mixout(fn) {
+    const index = mixins[this.namespace].findIndex(([mixinFn]) => mixinFn === fn);
+
+    mixins[this.namespace].splice(index, 1);
+
+    return new Stash(this.namespace);
+  }
+
+  _applyMixin(fn, args) {
+    const props = fn(this, ...args);
+
+    for (const name in props) {
+      this[name] = props[name].bind(this);
+    }
   }
 
   init(initial) {

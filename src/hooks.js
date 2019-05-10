@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
 import { data, actions, subscribe } from "./storage";
 import { get } from "./utils";
-import Stash from "./Stash";
-
-export function defStash(ns, initial, setup) {
-  const stash = new Stash(ns);
-
-  stash.reset();
-  stash.init(initial);
-
-  if (setup) {
-    setup(stash);
-  }
-}
 
 export function useData(path, getter) {
   const item = get(data, path);

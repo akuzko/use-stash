@@ -9,7 +9,9 @@
   ],
   "globals": {
     "global": "readonly",
+    "window": "readonly",
     "document": "readonly",
+    "console": "readonly",
     "Promise": "readonly"
   },
   "settings": {
