@@ -1,9 +1,11 @@
 import { mixin } from "../../../src";
+import { logger } from "../../../src/mixins";
 
-import Inspector from "./mixin.Inspector";
-import Logger from "./mixin.Logger";
+import inspector from "./mixin.inspector";
+import localStorageDump from "./mixin.localStorageDump";
 
-mixin(Inspector);
-mixin(Logger, {
+mixin(inspector);
+mixin(localStorageDump);
+mixin(logger, {
   todos: "blue"
 });

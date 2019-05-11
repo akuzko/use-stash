@@ -3,6 +3,10 @@ import { useData, useActions, useStash } from "../../src";
 
 import "./stash";
 
+function clearStorageStore() {
+  localStorage.removeItem("App/stash-mixins/localStorageDump");
+}
+
 export default function App() {
   const {name} = useData("session");
 
@@ -16,6 +20,7 @@ export default function App() {
       <Todos />
       <TodoDetails />
       <Logs />
+      <button onClick={ clearStorageStore }>Clear Storage</button>
     </>
   );
 }

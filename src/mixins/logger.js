@@ -35,14 +35,14 @@ function getNsColor(ns, setup) {
   return color;
 }
 
-export default function Logger(stash, colors) {
+export default function logger(stash, colors) {
   const {namespace, defAction, reduce, get} = stash;
   const color = getNsColor(namespace, colors);
 
   return {
     defAction(name, action) {
       defAction(name, (...args) => {
-        Logger.latestAction = [namespace, name];
+        logger.latestAction = [namespace, name];
 
         console.log("%caction %c%s", "color: #9e9e9e", `font-weight: bold; color: ${color};`, `${namespace}/${name}`, args);
 
@@ -60,10 +60,10 @@ export default function Logger(stash, colors) {
           "color: #9e9e9e;",
           `font-weight: bold; color: ${color};`,
           "font-weight: normal; color: black;",
-          `font-weight: bold; color: ${getNsColor(Logger.latestAction[0])}`,
-          Logger.latestAction.join("/"),
+          `font-weight: bold; color: ${getNsColor(logger.latestAction[0])}`,
+          logger.latestAction.join("/"),
           "font-weight: normal; color: black;"
-        )
+        );
       } else {
         logArgs.push(
           `%creduce %c ${namespace}/${name}`,
@@ -78,5 +78,5 @@ export default function Logger(stash, colors) {
       console.log("%c next data", "font-weight: bold; color: #4caf50;", get());
       console.groupEnd();
     }
-  }
+  };
 }

@@ -18,7 +18,7 @@ describe("mixins usage", () => {
           fn(...args);
         });
       }
-    }
+    };
   }
 
   beforeEach(() => {

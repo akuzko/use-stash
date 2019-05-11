@@ -1,8 +1,8 @@
 import { defStash } from "../../../src";
-import Logger from "./mixin.Logger";
+import { logger } from "../../../src/mixins";
 
 defStash("logs", [], ({mixout}) => {
-  const {defAction, reduce} = mixout(Logger);
+  const {defAction, reduce} = mixout(logger);
 
   defAction("addEntry", (entry) => {
     reduce(data => [...data, entry]);

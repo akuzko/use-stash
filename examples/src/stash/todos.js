@@ -38,7 +38,7 @@ defStash("todos", initialTodos, ({defAction, callAction, reduce, get, ns}) => {
         }
 
         ns("logs").callAction("addEntry", `${ns("session").get("name")} set status of "${todo.title}" to ${statusTitle}`);
-      })
+      });
   });
 
   defAction("removeTodo", (id) => {

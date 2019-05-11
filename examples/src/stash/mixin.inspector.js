@@ -1,6 +1,6 @@
 window.appData = {};
 
-export default function Inspector(stash) {
+export default function inspector(stash) {
   const {namespace, init, reduce, get} = stash;
 
   return {
@@ -13,5 +13,5 @@ export default function Inspector(stash) {
       reduce(fn);
       window.appData[namespace] = get();
     }
-  }
+  };
 }

@@ -35,7 +35,7 @@ describe("HOC usage", () => {
   describe("withData", () => {
     class Layout extends Component {
       render() {
-        return <div className="username">{ this.props.username }</div>
+        return <div className="username">{ this.props.username }</div>;
       }
     }
 
@@ -51,7 +51,7 @@ describe("HOC usage", () => {
   describe("withActions", () => {
     class AddItemButton extends Component {
       render() {
-        return <button className="addItemBtn" onClick={ this.props.addItem }>Add Item</button>
+        return <button className="addItemBtn" onClick={ this.props.addItem }>Add Item</button>;
       }
     }
 

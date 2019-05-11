@@ -12,7 +12,9 @@
     "window": "readonly",
     "document": "readonly",
     "console": "readonly",
-    "Promise": "readonly"
+    "localStorage": "readonly",
+    "Promise": "readonly",
+    "setTimeout": "readonly"
   },
   "settings": {
     "react": {
@@ -29,6 +31,7 @@
   },
   "rules": {
     "quotes": ["warn", "double", {"avoidEscape": true}],
+    "semi": ["warn", "always"],
     "react/jsx-curly-spacing": ["warn", "always"],
     "react/prop-types": "off"
   }

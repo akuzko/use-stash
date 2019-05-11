@@ -230,7 +230,7 @@ describe("usage", () => {
             <Todo index={ 1 } />
             <Details id={ 2 } />
           </>
-        )
+        );
       }
 
       it("re-renders components only when specific piece of data changes", () => {
