@@ -35,7 +35,7 @@ function getNsColor(ns, setup) {
   return color;
 }
 
-export default function logger(stash, colors) {
+export default function logger(stash, colors = {}) {
   const {namespace, defAction, reduce, get} = stash;
   const color = getNsColor(namespace, colors);
 
@@ -46,7 +46,7 @@ export default function logger(stash, colors) {
 
         console.log("%caction %c%s", "color: #9e9e9e", `font-weight: bold; color: ${color};`, `${namespace}/${name}`, args);
 
-        action(...args);
+        return action(...args);
       });
     },
 
@@ -74,9 +74,10 @@ export default function logger(stash, colors) {
 
       console.groupCollapsed(...logArgs);
       console.log("%c prev data", "font-weight: bold; color: #9e9e9e;", get());
-      reduce(reducer);
+      const result = reduce(reducer);
       console.log("%c next data", "font-weight: bold; color: #4caf50;", get());
       console.groupEnd();
+      return result;
     }
   };
 }

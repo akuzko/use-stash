@@ -1,17 +1,19 @@
 {
   "name": "use-stash",
   "version": "2.0.0",
-  "description": "React hooks for app-wide data access and manipulation",
+  "description": "React hooks and HOCs for app-wide data access and manipulation",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "mixins"
   ],
   "scripts": {
+    "clear": "rimraf dist mixins",
     "start": "webpack-dev-server --mode development",
     "test": "mocha --require @babel/register --require @babel/polyfill --require ./test/setup.js --recursive",
     "test:watch": "npm run test -- --watch",
     "lint": "eslint src examples test",
-    "transpile": "babel src -d dist --copy-files",
+    "transpile": "npm run clear && babel src -d dist --copy-files && mv ./dist/mixins ./",
     "prepublishOnly": "npm run transpile"
   },
   "keywords": [
@@ -52,6 +54,7 @@
     "mocha": "^6.1.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "rimraf": "^2.6.3",
     "sinon": "^7.3.2",
     "style-loader": "^0.23.1",
     "webpack": "^4.30.0",

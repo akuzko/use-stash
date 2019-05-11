@@ -1,6 +1,7 @@
 node_modules
 
 dist
+mixins
 
 package-lock.json
 yarn.lock
