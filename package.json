@@ -29,8 +29,8 @@
   "homepage": "https://github.com/akuzko/use-stash",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react": "^16.8.x",
+    "react-dom": "^16.8.x"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
