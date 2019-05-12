@@ -40,13 +40,22 @@ function UserForm() {
   };
 
   return (
-    <>
-      <label>
-        Name
-        <input placeholder="Please enter your name" value={ name } onChange={ changeName } />
-      </label>
-      <button onClick={ submit }>Submit</button>
-    </>
+    <div className="name-form-wrapper">
+      <div className="profile-icon">
+        <div className="profile-photo" />
+      </div>
+      <div className="layout horizontal center name-form">
+        <input
+          placeholder="Please enter your name"
+          value={ name }
+          onChange={ changeName }
+          className="input no-border mr-20"
+        />
+        <button onClick={ submit } className="button blue">
+          Submit
+        </button>
+      </div>
+    </div>
   );
 }
 
