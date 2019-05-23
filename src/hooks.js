@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
+import get from "get-lookup";
 import { data, actions, subscribe } from "./storage";
-import { get } from "./utils";
 
 export function useData(path, getter) {
   const item = get(data, path);

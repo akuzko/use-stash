@@ -56,37 +56,56 @@ import "stash/projects";
 
 ### 3. Use Data and Actions
 
-`use-stash` provides following hooks for you to use:
-- `useData(path, mapperFn)` - returns a data object specified by `path`. The
-  simplest value of `path` is namespace name itself. But it can also represent
-  deeply nested value (see **Granular Data Access** section bellow).
-  Whenever this object gets updated, your component will be updated as well.
-  If `mapperFn` function is passed, it will be used to preprocess stashed value
-  before passing it to your component (see **Mapping Data on Access** section bellow).
-- `useActions(namespace)` - returns object with all actions defined for specified
-  `namespace`. This actions can (and should) be used for all data manipulations.
-- `useStash(namespace)` - returns two-object array of namespace data and
-  actions.
+`use-stash` provides following hooks for you to use
 
-For example:
+#### `useData(path, mapperFn)`
+
+Returns a data object specified by `path`. The simplest value of `path` is
+namespace name itself. But it can also represent deeply nested value
+(see **Granular Data Access** section bellow). Whenever this object gets
+updated, your component will be updated as well.
+
+If `mapperFn` function is passed, it will be used to preprocess stashed value
+before passing it to your component (see **Mapping Data on Access** section bellow).
+
+Usage example is provided in *useActions* section bellow.
+
+#### `useActions(namespace)`
+
+Returns object with all actions defined for specified `namespace`. This actions
+can (and should) be used for all data manipulations.
+
+Example:
 
 ```js
 import { useEffect } from "react";
-import { useData, useActions, useStash } from "use-stash";
+import { useData, useActions } from "use-stash";
 
 function TodosList() {
   const {items} = useData("todos");
   const {getTodos} = useActions("todos");
 
-  useEffect(getTodos, []);
+  useEffect(() => {
+    getTodos();
+  }, []);
 
   return (
     // render list of todos
   );
 }
+```
+
+#### `useStash(namespace)`
+
+Returns two-object array of namespace data and actions.
+
+Example:
+
+```js
+import { useEffect } from "react";
+import { useStash } from "use-stash";
 
 function TodoItem({id}) {
-  // `useStash` can be used to return both data and actions in single call;
   const [{details}, {getTodo}] = useStash("todos");
 
   useEffect(() => {
@@ -94,44 +113,120 @@ function TodoItem({id}) {
   }, [id]);
 
   return (
-    // render single item
+    // render details for single item
   );
 }
 ```
 
-### Granular Data Access
+### Stash instance API
+
+When defining a new stash namespace, corresponding `Stash` instance is passed to
+setup function, ready for you to destructure it for convenient usage. Each
+instance of `Stash` is bound to specific namespace and has following
+properties/methods:
+
+#### `namespace`
+
+Returns name of stash namespace. On definition, corresponds to first argument
+that is passed to `defStash` function.
+
+#### `defAction(name, fn)`
+
+Defines an action identified by `name` under Stash's namespace that can then be
+used via `useActions` / `useStash` hooks. `fn` is the function that represents
+a body of the action.
+
+#### `reduce([descriptor], fn)`
+
+Updates data related to Stash namespace. Mandatory `fn` reducer function should
+take a single argument - current Stash data and return a new data. There should
+be no objects updated in-place. Optional `descriptor` parameter can provide
+auxiliary information on what reducer logic is about. It is not required, but
+may be consumed by _mixins_, such as *logger* mixin (see bellow). Despite the
+fact it is optional, it comes as first argument due to better readability
+when given.
+
+Examples:
+
+```js
+// no descriptor
+defAction("addItem", (item) => {
+  reduce(data => [...data, item]);
+});
+
+// simple string descriptor
+defAction("addItem", (item) => {
+  reduce("addItem", data => [...data, item]);
+});
+
+// array descriptor with additional data
+defAction("addItem", (item) => {
+  reduce(["addItem", item], data => [...data, item]);
+});
+```
+
+#### `get([path])`
+
+Returns namespace-scope data at specified `path`. Uses [`get-lookup`](https://www.npmjs.com/package/get-lookup)
+for path resolution. If `path` is not provided, returns namespace data object
+itself.
+
+#### `callAction(actionName, ...actionArgs)`
+
+Calls an action `actionName`, passing `actionArgs` to the function that was
+used for this action definition via `defAction` function.
+
+#### `ns(namespace)`
+
+Returns a `Stash` instance for other namespace. This instance can be used for
+all sorts of things - gettings necessary data, calling actions, even reducing
+(changing) it's data, etc.
+
+#### `mixin(mixin)`
+
+Adds a mixin (see *mixins* section bellow), scoped to this stash namespace.
+
+#### `mixout(mixin)`
+
+Removes mixin from list of mixins applied for this stash namespace. Can be used,
+for instance, to opt-out mixin that was globally applied.
+
+### Common Use-Cases
+
+#### Granular Data Access
 
 Usually it may be much more efficient to use only small piece of data stored
 in namespace. This way your component will be re-rendered only if that small piece
 gets changed. To do so, you simply have to pass full path to the object you
-are interested in to `useData` hook call. All path segments should be separated
-by `"."`. For example:
+are interested in to `useData` hook call. `use-stash` uses
+[`get-lookup`](https://www.npmjs.com/package/get-lookup) package for fetching
+deeply nested values. For example:
 
 ```js
-function ItemStatus({index}) {
-  const status = useData(`todos.list.items.${index}.status`);
+function ItemStatus({id}) {
+  const status = useData(`todos.list.items.{id:${id}}.status`);
 
   return <div>{ status.toUpperCase() }</div>;
 }
 ```
 
-This component will be re-rendered only if status of item at `index` position of
-`todos.list.items` array changes.
+This component will be re-rendered only if status of item with corresponding
+value of `id` property in `todos.list.items` array changes.
 
-### Mapping Data on Access
+#### Mapping Data on Access
 
 It is possible to preprocess stashed data when accessing it by passing mapper
 function to `useData` hook. For example:
 
 ```js
-function ItemStatus({index}) {
-  const status = useData(`todos.list.items.${index}.status`, s => s.toUpperCase());
+function ItemStatus({id}) {
+  const status = useData(`todos.list.items.{id:${id}}.status`, s => s.toUpperCase());
 
   return <div>{ status }</div>;
 }
 ```
 
-### Accessing Data in Actions
+#### Accessing Data in Actions
 
 You can use `get` method of `Stash` instance to access data of corresponding namespace:
 
@@ -147,7 +242,7 @@ defStash("todos", initialState, ({defAction, reduce, get}) => {
 });
 ```
 
-### Cross-namespace Interaction
+#### Cross-namespace Interaction
 
 You can use `ns` method to access `Stash` instance of another namespace. It can be
 used for fetching data from other namespaces, reducing it and even calling actions
@@ -176,15 +271,132 @@ defStash("todos", initialState, ({defAction, reduce, get, ns}) => {
 });
 ```
 
+### Mixins
+
+Mixins are the way to add custom functionality to the one `use-stash` provides.
+In essence, mixins are simple functions that take `stash` instance as first
+mandatory argument and return an object with overloaded stash props. Any
+arguments passed to `mixin` function when applying mixin will be also passed to
+mixin function itself.
+
+Mixins can be global, i.e. ones that apply to all defined namespaces and local,
+applied individually by each namespace.
+
+For instance, if we want to have a mixin that makes stash data available for
+inspection at browser's console (via `window` object), it may look like this:
+
+```js
+window.appData = {};
+
+export default function inspector(stash) {
+  const {namespace, init, reduce, get} = stash;
+
+  return {
+    init(data) {
+      window.appData[namespace] = data;
+      init(data);
+    },
+
+    reduce(...args) {
+      reduce(...args);
+      window.appData[namespace] = get();
+    }
+  };
+}
+```
+
+And then, to add this mixin globally, i.e. to apply it to every defined
+stash namespace, we need a single function call:
+
+```js
+import { mixin } from "use-stash";
+
+mixin(inspector);
+```
+
+To apply mixin only to specific stash namespace, we can use `Stash#mixin` function
+available on stash namespace definition, i.e.:
+
+```js
+defStash("inspectedStash", initial, ({mixin}) => {
+  const {defAction, reduce} = mixin(inspector);
+
+  // rest of definitions
+});
+```
+
+It is important to notice here that methods used for stash namespace definition
+are destructurized from the result of `mixin` function call, i.e. *after*
+mixin has been applied.
+
+It is also possible to exclude mixin for single namespace if it has been globally
+applied before. For this you can use `Stash#mixout` function:
+
+```js
+defStash("isolatedStash", initial, ({mixout}) => {
+  const {defAction, reduce} = mixout(inspector);
+
+  // rest of definitions
+});
+```
+
+Just like with local `mixin` function, methods used for stash namespace definition
+should be destructurized from `mixout` function call result.
+
+#### `mixins/logger`
+
+Provided out-of-the-box, `logger` mixin function adds logging support to stash
+action calls and data reducing in colorful and readable way. It also makes use
+of descriptor string/object that can be passed as first argument of `reduce` function.
+
+By default, it colors logs for each namespace in it's own color (cycling through
+presets), but colors for each namespace can be set up manually:
+
+```js
+import { mixin } from "use-stash";
+import { logger } from "use-stash/mixins";
+
+if (__DEV__) {
+  mixin(logger, {
+    todos: "blue"
+  });
+}
+```
+
+And later on, for `todos` namespace we define, we can take advantage of having
+reducer's descriptor logged:
+
+```js
+defStash("todos", initialData, ({defAction, reduce}) => {
+  defAction("getTodos", () => {
+    fetch("/api/todos")
+      .then(response => response.json())
+      .then(items => reduce("getTodosSuccess", data => ({...data, items})));
+  });
+
+  defAction("getTodo", (id) => {
+    fetch(`/api/todos/${id}`)
+      .then(response => response.json())
+      .then((details) => {
+        reduce(["getTodoSuccess", details], data => ({...data, details}))
+      });
+  });
+});
+```
+
 ### HOCs for Class Components
 
 For hook-less class-based React components you can use HOC-based approach. For this,
 `use-stash` provides 3 helper functions, similar to hooks: `withData`, `withActions`
 and `withStash`. The latter mixes functionality of the former two.
 
-- `withData(dataMapping)` - allows to pass stash data to connected component's
-props. `dataMapping` is a plain object, whose keys are prop names and values are
-paths to data that component is interested in. For example:
+#### `withData(dataMapping)`
+
+Allows to pass stash data to connected component's props. `dataMapping` is a plain
+object, whose keys are prop names and values are paths to data that component is
+interested in.
+
+Example:
 
 ```js
 const HocPage = withData({
@@ -197,10 +409,13 @@ const HocPage = withData({
 In this example, underlying `Page` component will receive `username`, `todos`
 and `logEntries` props with values obtained from 3 different stash namespaces.
 
-- `withActions(actionsMapping)` - allows to pass stash actions to connected
-component's props. `actionsMapping` is a plain object, whose keys are prop names
-and values are strings that specify stash namespace and action name, separated
-by dot. For example:
+#### `withActions(actionsMapping)`
+
+Allows to pass stash actions to connected component's props. `actionsMapping`
+is a plain object, whose keys are prop names and values are strings that specify
+stash namespace and action name, separated by dot.
+
+Example:
 
 ```js
 const HocLayout = withActions({
@@ -211,8 +426,12 @@ const HocLayout = withActions({
 In this example, underlying `Layout` component will receive `fetchSession` prop,
 which is a function corresponding to `getSession` action of `session` namespace.
 
-- `withStash(dataMapping, actionsMapping)` - allows to pass both data and actions
-to connected component. A combination of `withData` and `withActions`. For example:
+#### `withStash(dataMapping, actionsMapping)`
+
+Allows to pass both data and actions to connected component. A combination of
+`withData` and `withActions`.
+
+Example:
 
 ```js
 const HocPage = withStash({

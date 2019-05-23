@@ -10,7 +10,7 @@ defStash("todos", initialTodos, ({defAction, callAction, reduce, get, ns}) => {
   defAction("getTodos", () => {
     return fetch("/todos")
       .then((list) => {
-        reduce("getTodosSuccess", data => ({...data, list}));
+        reduce(["getTodosSuccess", list], data => ({...data, list}));
       });
   });
 

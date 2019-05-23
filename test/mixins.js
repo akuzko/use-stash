@@ -26,7 +26,7 @@ describe("mixins usage", () => {
 
     defStash("mixin-items", [], ({defAction, reduce, get}) => {
       defAction("addItem", () => {
-        const length = get("length");
+        const length = get().length;
         const itemname = `Item ${length + 1}`;
 
         reduce(data => [...data, {name: itemname}]);

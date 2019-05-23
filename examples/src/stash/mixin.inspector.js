@@ -9,8 +9,8 @@ export default function inspector(stash) {
       init(data);
     },
 
-    reduce(fn) {
-      reduce(fn);
+    reduce(...args) {
+      reduce(...args);
       window.appData[namespace] = get();
     }
   };

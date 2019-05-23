@@ -1,5 +1,5 @@
+import get from "get-lookup";
 import { data, actions, listeners, mixins, withNotification } from "./storage";
-import { get } from "./utils";
 
 export default class Stash {
   constructor(ns) {
@@ -71,7 +71,12 @@ export default class Stash {
     return get(data[this.namespace], path);
   }
 
-  reduce(fn) {
+  // small hook in arguments to allow passing optional "descriptor" parameter as
+  // first argument. this is used, for instance, in `logger` mixin supplied
+  // with package, that can (and should) be avoided in production env.
+  reduce(descriptor, fn) {
+    fn = fn || descriptor;
+
     withNotification(this.namespace, () => {
       data[this.namespace] = fn(data[this.namespace]);
     });

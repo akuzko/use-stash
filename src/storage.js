@@ -1,4 +1,4 @@
-import { get } from "./utils";
+import get from "get-lookup";
 
 export const data = {};
 export const actions = {};

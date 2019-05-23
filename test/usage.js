@@ -16,7 +16,7 @@ describe("usage", () => {
       });
 
       defAction("addItem", (reduceLogs) => {
-        const length = get("length");
+        const length = get().length;
         const username = ns("session").get("name");
         const itemname = `Item ${length + 1}`;
         const logEntry = `${username} added item ${itemname}`;
@@ -164,8 +164,8 @@ describe("usage", () => {
 
       const renderCounts = {
         List: 0,
-        Todo0: 0,
         Todo1: 0,
+        Todo2: 0,
         Details: 0
       };
 
@@ -195,12 +195,12 @@ describe("usage", () => {
         );
       }
 
-      function Todo({index}) {
-        const done = useData(`todos.list.items.${index}.done`);
+      function Todo({id}) {
+        const done = useData(`todos.list.items.{id:${id}}.done`);
 
-        renderCounts[`Todo${index}`]++;
+        renderCounts[`Todo${id}`]++;
 
-        return <div className={ `todo-${index}-done` }>{ done ? "Done" : "Not Done" }</div>;
+        return <div className={ `todo-${id}-done` }>{ done ? "Done" : "Not Done" }</div>;
       }
 
       function Details({id}) {
@@ -226,8 +226,8 @@ describe("usage", () => {
         return (
           <>
             <List />
-            <Todo index={ 0 } />
-            <Todo index={ 1 } />
+            <Todo id={ 1 } />
+            <Todo id={ 2 } />
             <Details id={ 2 } />
           </>
         );
@@ -238,8 +238,8 @@ describe("usage", () => {
 
         expect(renderCounts).to.eql({
           List: 2,
-          Todo0: 1,
           Todo1: 1,
+          Todo2: 1,
           Details: 1
         });
 
@@ -247,8 +247,8 @@ describe("usage", () => {
 
         expect(renderCounts).to.eql({
           List: 3,
-          Todo0: 2,
-          Todo1: 1,
+          Todo1: 2,
+          Todo2: 1,
           Details: 1
         });
 
@@ -256,8 +256,8 @@ describe("usage", () => {
 
         expect(renderCounts).to.eql({
           List: 3,
-          Todo0: 2,
-          Todo1: 1,
+          Todo1: 2,
+          Todo2: 1,
           Details: 2
         });
       });
