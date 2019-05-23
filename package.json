@@ -1,6 +1,6 @@
 {
   "name": "use-stash",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "React hooks and HOCs for app-wide data access and manipulation",
   "main": "dist/index.js",
   "files": [
