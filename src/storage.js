@@ -22,7 +22,7 @@ export function withNotification(ns, cb) {
     const value = get(data, path);
 
     if (old[path] !== value) {
-      listeners[path].forEach(fn => fn(value));
+      listeners[path] && listeners[path].forEach(fn => fn(value));
     }
   });
 }

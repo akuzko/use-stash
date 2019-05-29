@@ -58,7 +58,7 @@ import "stash/projects";
 
 `use-stash` provides following hooks for you to use
 
-#### `useData(path, mapperFn)`
+#### `useData(path, [mapperFn])`
 
 Returns a data object specified by `path`. The simplest value of `path` is
 namespace name itself. But it can also represent deeply nested value
@@ -350,7 +350,8 @@ action calls and data reducing in colorful and readable way. It also makes use
 of descriptor string/object that can be passed as first argument of `reduce` function.
 
 By default, it colors logs for each namespace in it's own color (cycling through
-presets), but colors for each namespace can be set up manually:
+presets), but colors for each namespace can be set up manually via `colors`
+configuration option:
 
 ```js
 import { mixin } from "use-stash";
@@ -358,7 +359,9 @@ import { logger } from "use-stash/mixins";
 
 if (__DEV__) {
   mixin(logger, {
-    todos: "blue"
+    colors: {
+      todos: "blue"
+    }
   });
 }
 ```
@@ -381,6 +384,16 @@ defStash("todos", initialData, ({defAction, reduce}) => {
         reduce(["getTodoSuccess", details], data => ({...data, details}))
       });
   });
+});
+```
+
+It is also possible to prevent certain actions and reductions to be logged,
+in case if they happen very frequently and you don't want them to spam console's
+output. Such actions and reducers should be specified in the `except` mixin option:
+
+```js
+mixin(logger, {
+  except: ["todos.toggleTodo"]
 });
 ```
 

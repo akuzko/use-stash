@@ -7,5 +7,8 @@ import localStorageDump from "./mixin.localStorageDump";
 mixin(inspector);
 mixin(localStorageDump);
 mixin(logger, {
-  todos: "blue"
+  except: ["todos.toggleTodo"],
+  colors: {
+    todos: "blue"
+  }
 });

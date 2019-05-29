@@ -35,8 +35,14 @@ function getNsColor(ns, setup) {
   return color;
 }
 
-export default function logger(stash, colors = {}) {
+const defaultOptions = {
+  except: [],
+  colors: {}
+};
+
+export default function logger(stash, opts = {}) {
   const {namespace, defAction, reduce, get} = stash;
+  const {except, colors} = { ...defaultOptions, ...opts };
   const color = getNsColor(namespace, colors);
 
   return {
@@ -44,7 +50,9 @@ export default function logger(stash, colors = {}) {
       defAction(name, (...args) => {
         logger.latestAction = [namespace, name];
 
-        console.log("%caction %c%s", "color: #9e9e9e", `font-weight: bold; color: ${color};`, `${namespace}/${name}`, ...args);
+        if (!except.includes(`${namespace}.${name}`)) {
+          console.log("%caction %c%s", "color: #9e9e9e", `font-weight: bold; color: ${color};`, `${namespace}/${name}`, ...args);
+        }
 
         return action(...args);
       });
@@ -53,9 +61,12 @@ export default function logger(stash, colors = {}) {
     reduce(descriptor, reducer) {
       const logArgs = [];
       const extraArgs = [];
+      let skipLog = false;
 
       if (reducer === undefined && typeof descriptor === "function") {
         reducer = descriptor;
+        skipLog = except.includes(logger.latestAction.join("."));
+
         logArgs.push(
           `%creduce %c${namespace} %c(latest action: %c%s%c)`,
           "color: #9e9e9e;",
@@ -73,6 +84,7 @@ export default function logger(stash, colors = {}) {
           extraArgs.push(...rest);
         }
 
+        skipLog = except.includes(`${namespace}.${descriptor}`);
         logArgs.push(
           `%creduce %c ${namespace}/${descriptor}`,
           "color: #9e9e9e;",
@@ -83,21 +95,25 @@ export default function logger(stash, colors = {}) {
       try {
         const nextData = reducer(get());
 
-        console.groupCollapsed(...logArgs);
-        if (extraArgs.length) {
-          console.log(...extraArgs);
+        if (!skipLog) {
+          console.groupCollapsed(...logArgs);
+          if (extraArgs.length) {
+            console.log(...extraArgs);
+          }
+          console.log("%c prev data", "font-weight: bold; color: #9e9e9e;", get());
+          console.log("%c next data", "font-weight: bold; color: #4caf50;", nextData);
+          console.groupEnd();
         }
-        console.log("%c prev data", "font-weight: bold; color: #9e9e9e;", get());
-        console.log("%c next data", "font-weight: bold; color: #4caf50;", nextData);
-        console.groupEnd();
 
         return reduce(() => nextData);
       } catch (error) {
-        logArgs[0] = logArgs[0] + "%c failed";
-        logArgs[1] = "color: red;";
-        logArgs.push("font-weight: bold; color: red;");
+        if (!skipLog) {
+          logArgs[0] = logArgs[0] + "%c failed";
+          logArgs[1] = "color: red;";
+          logArgs.push("font-weight: bold; color: red;");
 
-        console.log(...logArgs);
+          console.log(...logArgs);
+        }
 
         throw error;
       }
