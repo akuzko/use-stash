@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { expect } from "chai";
 import { shallow, mount } from "enzyme";
 
@@ -59,20 +59,29 @@ describe("usage", () => {
       });
     });
 
-    describe("using mapper function to preprocess stashed data", () => {
-      function List() {
-        const items = useData("items", items => items.map(i => i.name.toUpperCase()));
+
+    describe("dynamic path", () => {
+      function Item() {
+        const [index, setIndex] = useState(0);
+        const name = useData(`items.${index}.name`);
         const {getItems} = useActions("items");
 
         useEffect(getItems, []);
 
-        return <div>{ items[0] }</div>;
+        return (
+          <div>
+            <button className="nextItemBtn" onClick={ () => setIndex(index + 1) }>Next</button>
+            <div className="itemName">{ name }</div>
+          </div>
+        );
       }
 
-      it("uses mapper function", () => {
-        const wrapper = mount(<List />);
+      it("uses data corresponding to path updates", () => {
+        const wrapper = mount(<Item />);
 
-        expect(wrapper.find("div").text()).to.equal("FOO");
+        expect(wrapper.find("div.itemName").text()).to.equal("Foo");
+        wrapper.find("button.nextItemBtn").simulate("click");
+        expect(wrapper.find("div.itemName").text()).to.equal("");
       });
     });
 

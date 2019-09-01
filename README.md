@@ -58,15 +58,12 @@ import "stash/projects";
 
 `use-stash` provides following hooks for you to use
 
-#### `useData(path, [mapperFn])`
+#### `useData(path)`
 
 Returns a data object specified by `path`. The simplest value of `path` is
 namespace name itself. But it can also represent deeply nested value
-(see **Granular Data Access** section bellow). Whenever this object gets
+(see **Granular Data Access** section bellow). Whenever this value gets
 updated, your component will be updated as well.
-
-If `mapperFn` function is passed, it will be used to preprocess stashed value
-before passing it to your component (see **Mapping Data on Access** section bellow).
 
 Usage example is provided in *useActions* section bellow.
 
@@ -213,18 +210,8 @@ function ItemStatus({id}) {
 This component will be re-rendered only if status of item with corresponding
 value of `id` property in `todos.list.items` array changes.
 
-#### Mapping Data on Access
-
-It is possible to preprocess stashed data when accessing it by passing mapper
-function to `useData` hook. For example:
-
-```js
-function ItemStatus({id}) {
-  const status = useData(`todos.list.items.{id:${id}}.status`, s => s.toUpperCase());
-
-  return <div>{ status }</div>;
-}
-```
+Also, as can be seen from the example above, it is OK to use dynamic data paths,
+i.e. the ones that depend on changeable props or state values.
 
 #### Accessing Data in Actions
 
@@ -232,8 +219,8 @@ You can use `get` method of `Stash` instance to access data of corresponding nam
 
 ```js
 defStash("todos", initialState, ({defAction, reduce, get}) => {
-  defAction("removeTodo", (i) => {
-    const id = get(`list.${i}.id`);
+  defAction("removeTodo", (index) => {
+    const id = get(`list.${index}.id`);
 
     reduce((data) => {
       return {...data, list: data.list.filter(item => item.id !== id)};

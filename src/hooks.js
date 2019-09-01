@@ -2,13 +2,19 @@ import { useState, useEffect } from "react";
 import get from "get-lookup";
 import { data, actions, subscribe } from "./storage";
 
-export function useData(path, getter) {
-  const item = get(data, path);
-  const [nsData, setNsData] = useState(getter ? getter(item) : item);
+export function useData(path) {
+  const actual = get(data, path);
+  const [item, setItem] = useState(actual);
 
-  useEffect(() => subscribe(path, dt => setNsData(getter ? getter(dt) : dt)), []);
+  useEffect(() => {
+    if (item !== actual) {
+      setItem(actual);
+    }
 
-  return nsData;
+    return subscribe(path, setItem);
+  }, [path]);
+
+  return actual;
 }
 
 export function useActions(ns) {
