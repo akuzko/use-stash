@@ -1,5 +1,5 @@
 import { mixin } from "../../../src";
-import { logger } from "../../../src/mixins";
+import { logger, actionReducer } from "../../../src/mixins";
 
 import inspector from "./mixin.inspector";
 import localStorageDump from "./mixin.localStorageDump";
@@ -12,3 +12,4 @@ mixin(logger, {
     todos: "blue"
   }
 });
+mixin(actionReducer);

@@ -7,17 +7,17 @@ const initialTodos = {
 };
 
 defStash("todos", initialTodos, ({defAction, callAction, reduce, get, ns}) => {
-  defAction("getTodos", () => {
+  defAction("getTodos", () => (reduce) => {
     return fetch("/todos")
       .then((list) => {
-        reduce(["getTodosSuccess", list], data => ({...data, list}));
+        reduce.success(data => ({...data, list}), [list]);
       });
   });
 
-  defAction("getTodo", (id) => {
+  defAction("getTodo", (id) => (reduce) => {
     return fetch(`/todos/${id}`)
       .then((details) => {
-        reduce(data => ({...data, details}));
+        reduce(data => ({...data, details}), [details]);
       });
   });
 

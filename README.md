@@ -384,6 +384,58 @@ mixin(logger, {
 });
 ```
 
+#### `mixins/actionReducer`
+
+Generic stash reducer functions are not bound to actions they have originated
+due to async nature of data update flow (they only keep track of the latest action
+being invoked). Since main purpose of `use-stash` is productivity and simplicity,
+for easier development and logging it is possible to use per-action reducer functions.
+Such reducers will generate descriptors corresponding to action they are bound to:
+
+```js
+import { mixin } from "use-stash";
+import { actionReducer } from "use-stash/mixins";
+
+mixin(actionReducer);
+````
+Make sure to add this mixin *after* adding `logger` mixin (see above). And the
+you can have:
+
+```js
+defStash("todos", initialData, ({defAction}) => {
+  defAction("getTodos", () => (reduce) => {
+    fetch("/api/todos")
+      .then(response => response.json())
+      .then(items => reduce(data => ({...data, items})));
+  });
+
+  defAction("getTodo", (id) => {
+    fetch(`/api/todos/${id}`)
+      .then(response => response.json())
+      .then((details) => {
+        reduce.success(data => ({...data, details}), [details]);
+        // ^ the last optional array argument specifies additional
+        //   data to be logged
+      });
+  });
+});
+```
+Bellow you can see examples of what action reducer function correspond to:
+
+```js
+defStash("todos", ({defAction, reduce: stashReduce}) => {
+  defAction("getTodo", (id) => (reduce) => {
+    // ...
+    reduce(() => data);                // stashReduce("getTodo", () => data);
+    reduce(() => data, [data]);        // stashReduce(["getTodo", data], () => data);
+    reduce.success(() => data);        // stashReduce("getTodoSuccess", () => data);
+    reduce.success(() => data, [data]) // stashReduce(["getTodoSuccess", data], () => data);
+    reduce.failure(() => ({}));        // stashReduce("getTodoFailure", () => ({}));
+  });
+});
+````
+
+
 ### HOCs for Class Components
 
 For hook-less class-based React components you can use HOC-based approach. For this,
