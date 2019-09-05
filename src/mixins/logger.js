@@ -58,7 +58,8 @@ export default function logger(stash, opts = {}) {
       });
     },
 
-    reduce(descriptor, reducer) {
+    reduce(name, reducer, deps) {
+      let descriptor = deps ? [name, ...deps] : name;
       const logArgs = [];
       const extraArgs = [];
       let skipLog = false;

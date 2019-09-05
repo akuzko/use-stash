@@ -46,12 +46,12 @@ defStash("todos", initialTodos, ({defAction, callAction, reduce, get, ns}) => {
 
     return destroy(`/todos/${id}`)
       .then(() => {
-        reduce((data) => {
+        reduce("removeTodo", (data) => {
           return {
             list: data.list.filter(item => item !== todo),
             details: get("details.id") === todo.id ? {} : data.details
           };
-        });
+        }, [id]);
 
         ns("logs").callAction("addEntry", `${ns("session").get("name")} removed entry "${todo.title}"`);
       });

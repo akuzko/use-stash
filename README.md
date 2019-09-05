@@ -368,7 +368,9 @@ defStash("todos", initialData, ({defAction, reduce}) => {
     fetch(`/api/todos/${id}`)
       .then(response => response.json())
       .then((details) => {
-        reduce(["getTodoSuccess", details], data => ({...data, details}))
+        reduce(["getTodoSuccess", details], data => ({...data, details}));
+        // ^ this is equivalent of:
+        //   reduce("getTodoSuccess", data => ({...data, details}), [details]);
       });
   });
 });
@@ -398,7 +400,7 @@ import { actionReducer } from "use-stash/mixins";
 
 mixin(actionReducer);
 ````
-Make sure to add this mixin *after* adding `logger` mixin (see above). And the
+Make sure to add this mixin *after* adding `logger` mixin (see above). And then
 you can have:
 
 ```js
