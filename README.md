@@ -411,7 +411,7 @@ defStash("todos", initialData, ({defAction}) => {
       .then(items => reduce(data => ({...data, items})));
   });
 
-  defAction("getTodo", (id) => {
+  defAction("getTodo", (id) => (reduce) => {
     fetch(`/api/todos/${id}`)
       .then(response => response.json())
       .then((details) => {
