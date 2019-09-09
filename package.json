@@ -62,6 +62,7 @@
     "webpack-dev-server": "^3.3.1"
   },
   "dependencies": {
+    "deep-object-diff": "^1.1.0",
     "get-lookup": "^1.0.0"
   }
 }

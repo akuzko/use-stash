@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+import { diff } from "deep-object-diff";
+
 const colorPresets = [
   "purple",
   "olive",
@@ -103,6 +105,7 @@ export default function logger(stash, opts = {}) {
           }
           console.log("%c prev data", "font-weight: bold; color: #9e9e9e;", get());
           console.log("%c next data", "font-weight: bold; color: #4caf50;", nextData);
+          console.log("%c data diff", "font-weight: bold; color: #c86bc0;", diff(get(), nextData));
           console.groupEnd();
         }
 
