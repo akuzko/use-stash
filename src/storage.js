@@ -37,9 +37,5 @@ export function subscribe(path, handler) {
     const index = listeners[path].indexOf(handler);
 
     listeners[path].splice(index, 1);
-
-    if (!listeners[path].length) {
-      delete listeners[path];
-    }
   };
 }
