@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import get from "get-lookup";
-import { data, actions, subscribe } from "./storage";
+import { useState, useMemo, useEffect } from "react";
+import Storage from "./Storage";
 
 export function useData(path) {
-  const actual = get(data, path);
+  const [storage, nsPath] = useMemo(() => Storage.resolve(path), [path]);
+  const actual = storage.get(nsPath);
   const [item, setItem] = useState(actual);
 
   useEffect(() => {
@@ -11,14 +11,14 @@ export function useData(path) {
       setItem(actual);
     }
 
-    return subscribe(path, setItem);
-  }, [path]);
+    return storage.subscribe(nsPath, setItem);
+  }, [storage, nsPath]);
 
   return actual;
 }
 
 export function useActions(ns) {
-  return actions[ns];
+  return Storage.instance(ns).actions;
 }
 
 export function useStash(ns) {

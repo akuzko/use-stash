@@ -1,9 +1,10 @@
 import get from "get-lookup";
-import { data, actions, listeners, mixins, withNotification } from "./storage";
+import Storage, { mixins } from "./Storage";
 
 export default class Stash {
   constructor(ns) {
     this.namespace = ns;
+    this.storage = Storage.instance(ns);
 
     this.init = this.init.bind(this);
     this.defAction = this.defAction.bind(this);
@@ -18,12 +19,6 @@ export default class Stash {
 
   ns(ns) {
     return new Stash(ns);
-  }
-
-  reset() {
-    actions[this.namespace] = {};
-    listeners[this.namespace] = [];
-    mixins[this.namespace] = [...mixins.global];
   }
 
   mixin(fn, ...args) {
@@ -58,17 +53,17 @@ export default class Stash {
   }
 
   init(initial) {
-    data[this.namespace] = initial;
+    this.storage.data = initial;
   }
 
   defAction(name, fn) {
-    actions[this.namespace][name] = fn;
+    this.storage.actions[name] = fn;
   }
 
   get(path) {
-    if (!path) return data[this.namespace];
+    if (!path) return this.storage.data;
 
-    return get(data[this.namespace], path);
+    return get(this.storage.data, path);
   }
 
   // small hook in arguments to allow passing optional "descriptor" parameter as
@@ -77,12 +72,12 @@ export default class Stash {
   reduce(descriptor, fn) {
     fn = fn || descriptor;
 
-    withNotification(this.namespace, () => {
-      data[this.namespace] = fn(data[this.namespace]);
+    this.storage.withNotification(() => {
+      this.storage.data = fn(this.storage.data);
     });
   }
 
   callAction(name, ...args) {
-    return actions[this.namespace][name](...args);
+    return this.storage.actions[name].apply(null, args);
   }
 }

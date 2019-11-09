@@ -1,5 +1,5 @@
 import Stash from "./Stash";
-import { mixins } from "./storage";
+import Storage, { mixins } from "./Storage";
 
 export function mixin(fn, ...args) {
   const index = mixins.global.findIndex(([mixinFn]) => mixinFn === fn);
@@ -18,9 +18,10 @@ export function mixout(fn) {
 }
 
 export function defStash(ns, initial, setup) {
+  Storage.reset(ns);
+
   const stash = new Stash(ns);
 
-  stash.reset();
   stash.init(initial);
 
   if (setup) {
