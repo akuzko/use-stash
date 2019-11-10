@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { shallow, mount } from "enzyme";
 
 import { useData, useActions, useStash, defStash } from "../src";
+import Storage from "../src/Storage";
 
 describe("usage", () => {
   beforeEach(() => {
@@ -76,12 +77,31 @@ describe("usage", () => {
         );
       }
 
+      function ItemWrapper() {
+        const name = useData("items.2.name");
+
+        return (
+          <div>
+            <div>{ name }</div>
+            <Item />
+          </div>
+        );
+      }
+
       it("uses data corresponding to path updates", () => {
         const wrapper = mount(<Item />);
 
         expect(wrapper.find("div.itemName").text()).to.equal("Foo");
         wrapper.find("button.nextItemBtn").simulate("click");
         expect(wrapper.find("div.itemName").text()).to.equal("");
+      });
+
+      it("persists handlers order after useEffect", () => {
+        const wrapper = mount(<ItemWrapper />);
+        const storage = Storage.instance("items");
+
+        wrapper.find("button.nextItemBtn").simulate("click");
+        expect(storage.listeners.slice().reverse().map(h => h.__stashPath)).to.eql(["2.name", "1.name"]);
       });
     });
 

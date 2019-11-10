@@ -1,17 +1,18 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Storage from "./Storage";
 
 export function useData(path) {
+  const handlerIndexRef = useRef(null);
   const [storage, nsPath] = useMemo(() => Storage.resolve(path), [path]);
   const actual = storage.get(nsPath);
-  const [item, setItem] = useState(actual);
+  const [data, setData] = useState(actual);
 
   useEffect(() => {
-    if (item !== actual) {
-      setItem(actual);
+    if (data !== actual) {
+      setData(actual);
     }
 
-    return storage.subscribe(nsPath, setItem);
+    return storage.subscribe(nsPath, setData, handlerIndexRef);
   }, [storage, nsPath]);
 
   return actual;
