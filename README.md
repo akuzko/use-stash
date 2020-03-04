@@ -213,6 +213,40 @@ value of `id` property in `todos.list.items` array changes.
 Also, as can be seen from the example above, it is OK to use dynamic data paths,
 i.e. the ones that depend on changeable props or state values.
 
+#### Data Mapping on Access
+
+In some scenarios, even when subscribed on a subset of data, there might be
+need to extract some special value based on it, and re-render component only
+when this value changes. For instance, one may have a `TodoIndicator` component
+that should render different value based on if there is *any incomplete todo*.
+Thus, no matter if name of any todo changes, and if list itself changes,
+that should not affect such component. To achieve this behavior, `useData` hook
+accepts a mapper function as it's second argument:
+```js
+function TodoIndicator() {
+  const allDone = useData("todos.list.items", (items) => {
+    return items.every(item => item.status === "completed");
+  });
+
+  // ...
+}
+```
+
+For even more complicated scenarios, where mapping function returns new
+identities every time (such as arrays or objects), one may pass comparator
+function as third argument:
+```js
+import isEqual from "lodash/isEqual";
+
+function TodoNames() {
+  const names = useData("todos.list.items", (items) => {
+    return items.map(item => item.name);
+  }, isEqual);
+
+  // ...
+}
+```
+
 #### Accessing Data in Actions
 
 You can use `get` method of `Stash` instance to access data of corresponding namespace:

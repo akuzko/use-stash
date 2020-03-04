@@ -2,13 +2,13 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import Storage from "./Storage";
 
 const identity = obj => obj;
+const areSame = (a, b) => a === b;
 
-export function useData(path, mapper = identity, toCompare = identity) {
+export function useData(path, mapper = identity, areEqual = areSame) {
   const handlerIndexRef = useRef(null);
   const [storage, nsPath] = useMemo(() => Storage.resolve(path), [path]);
   const storageData = storage.get(nsPath);
   const actual = useMemo(() => mapper(storageData), [storageData]);
-  const compare = toCompare(actual);
   const [data, setData] = useState(actual);
 
   useEffect(() => {
@@ -18,15 +18,14 @@ export function useData(path, mapper = identity, toCompare = identity) {
   }, []);
 
   useEffect(() => {
-    if (toCompare(data) !== toCompare(actual)) {
+    if (!areEqual(data, actual)) {
       setData(actual);
     }
 
     const handler = (value) => {
       const nextActual = mapper(value);
-      const nextCompare = toCompare(nextActual);
 
-      if (nextCompare !== compare) {
+      if (!areEqual(nextActual, actual)) {
         setData(nextActual);
       }
     };
@@ -34,7 +33,7 @@ export function useData(path, mapper = identity, toCompare = identity) {
     handler.__indexRef = handlerIndexRef;
 
     return storage.subscribe(nsPath, handler);
-  }, [storage, nsPath, compare]);
+  }, [storage, nsPath, actual]);
 
   return actual;
 }
