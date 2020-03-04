@@ -1,19 +1,40 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import Storage from "./Storage";
 
-export function useData(path) {
+const identity = obj => obj;
+
+export function useData(path, mapper = identity, toCompare = identity) {
   const handlerIndexRef = useRef(null);
   const [storage, nsPath] = useMemo(() => Storage.resolve(path), [path]);
-  const actual = storage.get(nsPath);
+  const storageData = storage.get(nsPath);
+  const actual = useMemo(() => mapper(storageData), [storageData]);
+  const compare = toCompare(actual);
   const [data, setData] = useState(actual);
 
   useEffect(() => {
-    if (data !== actual) {
+    return () => {
+      handlerIndexRef.current = -1;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (toCompare(data) !== toCompare(actual)) {
       setData(actual);
     }
 
-    return storage.subscribe(nsPath, setData, handlerIndexRef);
-  }, [storage, nsPath]);
+    const handler = (value) => {
+      const nextActual = mapper(value);
+      const nextCompare = toCompare(nextActual);
+
+      if (nextCompare !== compare) {
+        setData(nextActual);
+      }
+    };
+
+    handler.__indexRef = handlerIndexRef;
+
+    return storage.subscribe(nsPath, handler);
+  }, [storage, nsPath, compare]);
 
   return actual;
 }

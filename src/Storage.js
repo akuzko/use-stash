@@ -35,14 +35,14 @@ export default class Storage {
     return get(this.data, path);
   }
 
-  subscribe(path, handler, indexRef) {
+  subscribe(path, handler) {
     handler.__stashPath = path;
 
-    if (indexRef.current !== null) {
-      this.listeners.splice(indexRef.current, 0, handler);
+    if (handler.__indexRef.current !== null) {
+      this.listeners.splice(handler.__indexRef.current, 0, handler);
     } else {
       this.listeners.push(handler);
-      indexRef.current = this.listeners.length - 1;
+      handler.__indexRef.current = this.listeners.length - 1;
     }
 
     return () => {
@@ -64,6 +64,8 @@ export default class Storage {
     cb();
 
     [...this.listeners].reverse().forEach((handler) => {
+      if (handler.__indexRef.current === -1) return;
+
       const value = get(this.data, handler.__stashPath);
 
       if (old[handler.__stashPath] !== value) {

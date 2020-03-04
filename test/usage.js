@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { expect } from "chai";
 import { shallow, mount } from "enzyme";
 
@@ -134,7 +134,7 @@ describe("usage", () => {
         useEffect(dropItems, []);
 
         return (
-          <>
+          <Fragment>
             <button className="addItemBtn" onClick={ () => addItem() }>Add Item</button>
             <button className="addItemWithLogReduceBtn" onClick={ () => addItem(true) }>Add Item</button>
 
@@ -144,7 +144,7 @@ describe("usage", () => {
                 ))
               }
             </ul>
-          </>
+          </Fragment>
         );
       }
 
@@ -207,7 +207,7 @@ describe("usage", () => {
         renderCounts.List++;
 
         return (
-          <>
+          <Fragment>
             { items.map((item, i) => (
                 <div key={ i }>
                   { item.id }
@@ -220,7 +220,7 @@ describe("usage", () => {
                 </div>
               ))
             }
-          </>
+          </Fragment>
         );
       }
 
@@ -239,7 +239,7 @@ describe("usage", () => {
         renderCounts.Details++;
 
         return (
-          <>
+          <Fragment>
             <button className="showDetailsBtn" onClick={ () => getTodo(id) }>
               Show Details
             </button>
@@ -247,18 +247,18 @@ describe("usage", () => {
             { description &&
               <div className="details">{ description }</div>
             }
-          </>
+          </Fragment>
         );
       }
 
       function Page() {
         return (
-          <>
+          <Fragment>
             <List />
             <Todo id={ 1 } />
             <Todo id={ 2 } />
             <Details id={ 2 } />
-          </>
+          </Fragment>
         );
       }
 
@@ -288,6 +288,45 @@ describe("usage", () => {
           Todo1: 2,
           Todo2: 1,
           Details: 2
+        });
+      });
+
+      describe("mapper and compare functions", () => {
+        let renderCount = 0;
+
+        function ListHeader() {
+          const ids = useData("todos.list.items", (items) => {
+            return items.map(i => i.id);
+          }, ids => ids.join("-"));
+          const {getTodos} = useActions("todos");
+
+          useEffect(getTodos, []);
+
+          renderCount++;
+
+          return <div className="todoIds">{ ids.join(", ") }</div>;
+        }
+
+        function Page() {
+          const {completeTodo} = useActions("todos");
+
+          return (
+            <Fragment>
+              <ListHeader />
+              <button className="checkFirst" onClick={ () => completeTodo(1) }>
+                Check
+              </button>
+            </Fragment>
+          );
+        }
+
+        it("re-renders components only if compare value changed", () => {
+          const wrapper = mount(<Page />);
+
+          expect(renderCount).to.eql(1);
+          expect(wrapper.find(".todoIds").text()).to.eq("1, 2");
+          wrapper.find(".checkFirst").simulate("click");
+          expect(renderCount).to.eql(1);
         });
       });
     });
